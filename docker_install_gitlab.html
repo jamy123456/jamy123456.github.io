@@ -19,21 +19,26 @@
     <div>
         <a>sudo docker run --detach \</a><br/>
         <a>--hostname gitlab.example.com \</a><br/>
-        <a>--publish 443:443 --publish 80:80 --publish 22:22 \</a><br/>
+        <a>--publish 443:443 \</a><br/>
+        <a>--publish 80:80 \</a><br/>
+        <a>--publish 22:22 \</a><br/>
         <a>--name gitlab \</a><br/>
         <a>--restart always \</a><br/>
-        <a>--volume $HOME/gitlab/config:/etc/gitlab\</a><br/>
-        <a>--volume $HOME/gitlab/logs:/var/log/gitlab\</a><br/>
-        <a>--volume $HOME/gitlab/data:/var/opt/gitlab\</a><br/>
+        <a>--volume $HOME/gitlab/config:/etc/gitlab \</a><br/>
+        <a>--volume $HOME/gitlab/logs:/var/log/gitlab \</a><br/>
+        <a>--volume $HOME/gitlab/data:/var/opt/gitlab \</a><br/>
         <a>gitlab/gitlab-ce:latest</a><br/>
     </div>
     <h3>7.gitlab容器启动需要几秒钟,然后用docker ps命令查看容器启动情况,也可以用docker logs 容器ID或是容器名查看容器启动日志</h3>
+    <img src="./container_boot.png" />
     <h3>8.容器启动没有问题后,修改$HOME/gitlab/config文件夹下的gitlab.rb文件,添加一下内容:</h3>
     <p>external_url 'http://192.168.43.121' ,其中192.168.43.121就是你宿主机的地址,一会要通过地址访问gitlab首页</p>
     <p>gitlab_rails['gitlab_ssh_host'] = '192.168.43.121'</p>
     <p>gitlab_rails['gitlab_shell_ssh_port'] = 22</p>
     <h3>9.修改完以上三项后重启一下容器就可以了(gitlab随着容器重启而重新加载配置启动),通过docker ps查看</h3>
     <h3>10.最后在浏览器输入192.168.43.121,然后旧车就可以进入gitlab注册首页了,接下来就痛快的玩耍吧!!!!!</h3>
+    <img src="./visit_gitlab.png" />
+    <img src=".//project_interface.png" />
 <!--sudo docker run --detach \
 --hostname gitlab.example.com \
 --publish 443:443 --publish 80:80 --publish 22:22 \
