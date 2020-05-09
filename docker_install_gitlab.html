@@ -16,15 +16,15 @@
     <h3>4.给gitlab以及下面的config,data,logs修改权限,命令是sudo chmod -R 755 gitlab</h3>
     <h3>5.执行docker命令拉去gitlab镜像,命令是docker pull gitlab</h3>
     <h3>6.执行docker命令启动gitlab容器,命令如下:</h3>
-    <p>sudo docker run --detach \
-        --hostname gitlab.example.com \
-        --publish 443:443 --publish 80:80 --publish 22:22 \
-        --name gitlab \
-        --restart always \
-        --volume $HOME/gitlab/config:/etc/gitlab\
-        --volume $HOME/gitlab/logs:/var/log/gitlab\
-        --volume $HOME/gitlab/data:/var/opt/gitlab\
-        gitlab/gitlab-ce:latest</p>
+    <p>sudo docker run --detach \</p>
+    <p>--hostname gitlab.example.com \</p>
+    <p>--publish 443:443 --publish 80:80 --publish 22:22 \</p>
+    <p>--name gitlab \</p>
+    <p>--restart always \</p>
+    <p>--volume $HOME/gitlab/config:/etc/gitlab\</p>
+    <p>--volume $HOME/gitlab/logs:/var/log/gitlab\</p>
+    <p>--volume $HOME/gitlab/data:/var/opt/gitlab\</p>
+    <p>gitlab/gitlab-ce:latest</p>
     <h3>7.gitlab容器启动需要几秒钟,然后用docker ps命令查看容器启动情况,也可以用docker logs 容器ID或是容器名查看容器启动日志</h3>
     <h3>8.容器启动没有问题后,修改$HOME/gitlab/config文件夹下的gitlab.rb文件,添加一下内容:</h3>
     <p>external_url 'http://192.168.43.121' ,其中192.168.43.121就是你宿主机的地址,一会要通过地址访问gitlab首页</p>
