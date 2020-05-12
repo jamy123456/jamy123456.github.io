@@ -1,0 +1,99 @@
+<!DOCTYPE>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <title>Docker Download</title>
+    <style type="text/css">
+        body {color: blue; margin-left: 100px; background-image: url("./background.jpg");}
+        ul {color: purple;}
+    </style>
+</head>
+<body>
+<h1 style="color:yellow">docker命令</h1>
+<ul>
+    <li><h2>使用命令查看docker的systemd配置：cat /usr/lib/systemd/system/docker.service</h2></li>
+    <li><h2>前台运行docker容器： docker  run -it 镜像名:标签名</h2></li>
+    <li><h2>后台运行docker容器：
+        docker  run -d 镜像名:标签名</h2></li>
+    <li><h2>以名字为my_mysql来，并以前台方式启动mysql容器：
+        docker run -it --name my_mysql   mysql</h2></li>
+    <li><h2>以名字为my_mysql，外部端口映射为3306，数据库root用户密码为root，并以后台方式启动mysql容器：
+        docker run -d --name my_mysql  -p 3306:3306 -e MYSQL_ROOT_PASSWORD=root  mysql</h2></li>
+    <li><h2>启动容器：
+        docker start 容器ID(容器name)</h2></li>
+    <li><h2>重启容器：
+        docker restart 容器ID(容器name)</h2></li>
+    <li><h2>停止容器：
+        docker stop 容器ID(容器name)</h2></li>
+    <li><h2>退出容器：
+        exit</h2></li>
+    <li><h2>查看所有的容器：
+        docker ps -a</h2></li>
+    <li><h2>查看运行的容器：
+        docker ps</h2></li>
+    <li><h2>查看docker容器的日志：
+        docker logs 容器ID(容器name)</h2></li>
+    <li><h2>查看运行的容器情况：
+        docker inspect 容器ID(容器name)</h2></li>
+    <li><h2>以交互界面进入已启动的容器：
+        docker attach 容器ID(容器name)
+        或是docker exec -it 容器ID(容器name) /bin/bash</h2></li>
+    <li><h2>修改镜像名称和标签:
+        docker tag  imageID   镜像名:标签</h2></li>
+    <li><h2>删除容器:
+        docker rm 容器ID(容器name)
+        注:容器一定要停止运行后才可以删除</h2></li>
+    <li><h2>删除镜像:
+        docker rmi  imageID
+        注意:一定是基于此镜像运行的容器都删除了才可以删除镜像</h2></li>
+    <li><h2>从宿主机复制文件到docker容器中：
+        docker cp 宿主机文件全路径  容器ID或是容器名称:容器目标文件夹</h2></li>
+    <li><h2>从docker容器复制文件到宿主机中：
+        docker cp 容器ID或是容器名称:容器目标全路径  宿主机目标文件夹</h2></li>
+    <li><h2>
+        <h2>Xshell如何连接Docker容器中的Linux:</h2>
+        <ol>
+            <li><h3>获取系统镜像
+                [root@centos ~]# docker pull centos:7 </h3></li>
+            <li><h3>启动（可以使用systemd管理服务进程）
+                [root@centos ~]# docker run -tdi --privileged centos init</h3></li>
+            <li><h3>查看容器
+                [root@centos ~]# docker ps</h3></li>
+            <li><h3>进入容器
+                [root@centos ~]# docker exec -it  0d77d1bf15b3</h3></li>
+            <li><h3>修改root密码，初始化密码123456
+                [root@0d77d1bf15b3 /]# passwd</h3></li>
+            <li><h3>安装容器的openssh-server
+                [root@0d77d1bf15b3 /]# yum install openssh-server -y</h3></li>
+            <li><h3>修改/etc/ssh/sshd_config配置并保存：PermitRootLogin yes    UsePAM no</h3></li>
+            <li><h3>启动ssh服务
+                [root@0d77d1bf15b3 /]# systemctl start sshd</h3></li>
+            <li><h3>退出容器
+                [root@0d77d1bf15b3 /]# exit</h3></li>
+            <li><h3>查看刚刚的容器ID
+                [root@centos ~]# docker ps</h3></li>
+            <li><h3>通过commit构建镜像
+                [root@centos ~]# docker commit  0d77d1bf15b3   centos_jamy:ssh</h3></li>
+            <li><h3>启动这个镜像的容器，并映射本地的一个闲置的端口（例如10000）到容器的22端
+                [root@centos ~]# docker run -d -p  22:22 --name  centos_jamy_ssh  centos_jamy:ssh  /usr/sbin/sshd  -D</h3></li>
+            <li><h3>用xshell连接刚才启动的容</h3></li>
+        </ol>
+    </h2></li>
+    <li><h2>
+        <h2>创建redis容器:</h2>
+        <ol>
+            <li><h3>启动edis容器:docker run --name redis_jamy -p 8082:6379 -d redis redis-server --appendonly yes</h3></li>
+            <li><h3>进入redis -cli客户端：
+                docker exec -it c65402be9f47 redis-cli</h3></li>
+        </ol>
+    </h2></li>
+    <li><h2>
+        <h2>创建tomcat容器:</h2>
+        <ol>
+            <li><h3>启动tomcat容器：
+                docker run -d --name mytomcat -p 8080:8080 -v /Users/root/webapps:/usr/local/tomcat/webapps  --restart always  tomcat:8.5</h3></li>
+        </ol>
+    </h2></li>
+</ul>
+</body>
+</html>
