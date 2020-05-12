@@ -9,8 +9,9 @@
     </style>
 </head>
 <body>
-<h1 style="color:yellow">docker命令</h1>
-<ul>
+  <img height="400" src="./docker-engine.png" />
+  <h1 style="color:yellow">docker命令</h1>
+  <ul>
     <li><h2>使用命令查看docker的systemd配置：cat /usr/lib/systemd/system/docker.service</h2></li>
     <li><h2>前台运行docker容器： docker  run -it 镜像名:标签名</h2></li>
     <li><h2>后台运行docker容器：
@@ -94,6 +95,6 @@
                 docker run -d --name mytomcat -p 8080:8080 -v /Users/root/webapps:/usr/local/tomcat/webapps  --restart always  tomcat:8.5</h3></li>
         </ol>
     </h2></li>
-</ul>
+   </ul>
 </body>
 </html>
