@@ -1,0 +1,494 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>openEuler22.03LTS安装nginx(openresty)</title>
+  <link rel="stylesheet" href="https://stackedit.io/style.css" />
+</head>
+
+<body class="stackedit">
+  <div class="stackedit__html"><p>nginx下载地址 ：<a href="http://nginx.org/en/download.html">http://nginx.org/en/download.html</a><br>
+openresty下载地址：<a href="http://openresty.org/en/download.html">http://openresty.org/en/download.html</a><br>
+tengine下载地址：<a href="http://tengine.taobao.org/download.html">http://tengine.taobao.org/download.html</a><br>
+注：openresty是nginx的一个开源分支，它将nginx与lua脚本完美的结合在一起，使得nginx不仅仅是作为一个反向代理的服务器，而向着通用性的web服务器的方向前进！！！<br>
+tengine也是nginx的一个开源分支，现在由阿里淘宝团队维护，它的性能和稳定性已经在大型的网站如淘宝网，天猫商城等得到了很好的检验。</p>
+<h3><a id="1__5"></a>1. 准备安装环境</h3>
+<p>（1）安装依赖</p>
+<pre><code class="prism language-java">yum <span class="token operator">-</span>y install gcc gcc<span class="token operator">-</span>c<span class="token operator">++</span> make cmake zlib zlib<span class="token operator">-</span>devel openssl openssl<span class="token operator">-</span>devel pcre<span class="token operator">-</span>devel
+</code></pre>
+<p>（2）nginx配置</p>
+<pre><code class="prism language-java">配置nginx
+<span class="token punctuation">.</span>/configure <span class="token operator">--</span>prefix<span class="token operator">=</span><span class="token operator">/</span>usr<span class="token operator">/</span>local<span class="token operator">/</span>nginx \
+ <span class="token operator">--</span><span class="token keyword">with</span><span class="token operator">-</span>http_stub_status_module <span class="token operator">--</span><span class="token keyword">with</span><span class="token operator">-</span>http_ssl_module \
+ <span class="token operator">--</span><span class="token keyword">with</span><span class="token operator">-</span>http_realip_module <span class="token operator">--</span><span class="token keyword">with</span><span class="token operator">-</span>http_gzip_static_module \
+ <span class="token operator">--</span><span class="token keyword">with</span><span class="token operator">-</span>file<span class="token operator">-</span>aio <span class="token operator">--</span><span class="token keyword">with</span><span class="token operator">-</span>http_realip_module 
+
+配置<span class="token function">nginx</span><span class="token punctuation">(</span>可以反向代理数据库<span class="token punctuation">)</span>
+<span class="token punctuation">.</span>/configure <span class="token operator">--</span>prefix<span class="token operator">=</span><span class="token operator">/</span>opt<span class="token operator">/</span><span class="token class-name">Nginx</span> <span class="token operator">--</span><span class="token keyword">with</span><span class="token operator">-</span>http_stub_status_module \ 
+<span class="token operator">--</span><span class="token keyword">with</span><span class="token operator">-</span>http_ssl_module  <span class="token operator">--</span><span class="token keyword">with</span><span class="token operator">-</span>http_realip_module <span class="token operator">--</span><span class="token keyword">with</span><span class="token operator">-</span>http_flv_module \
+<span class="token operator">--</span><span class="token keyword">with</span><span class="token operator">-</span>http_mp4_module <span class="token operator">--</span><span class="token keyword">with</span><span class="token operator">-</span>http_gzip_static_module <span class="token operator">--</span><span class="token keyword">with</span><span class="token operator">-</span>stream \
+<span class="token operator">--</span><span class="token keyword">with</span><span class="token operator">-</span>stream_ssl_module
+
+配置openresty<span class="token punctuation">,</span>openresty是nginx的一个分支
+<span class="token punctuation">.</span>/configure <span class="token operator">--</span>prefix<span class="token operator">=</span><span class="token operator">/</span>usr<span class="token operator">/</span>local<span class="token operator">/</span>openresty \
+ <span class="token operator">--</span><span class="token keyword">with</span><span class="token operator">-</span>http_stub_status_module <span class="token operator">--</span><span class="token keyword">with</span><span class="token operator">-</span>http_ssl_module \
+ <span class="token operator">--</span><span class="token keyword">with</span><span class="token operator">-</span>http_realip_module <span class="token operator">--</span><span class="token keyword">with</span><span class="token operator">-</span>http_gzip_static_module \
+ <span class="token operator">--</span><span class="token keyword">with</span><span class="token operator">-</span>file<span class="token operator">-</span>aio <span class="token operator">--</span><span class="token keyword">with</span><span class="token operator">-</span>http_realip_module
+
+
+</code></pre>
+<p>（3）查看是否配置成功</p>
+<pre><code class="prism language-java">echo $<span class="token operator">?</span>
+# 成功会显示数字零 
+<span class="token number">0</span>
+</code></pre>
+<h3><a id="2_nginx_41"></a>2. 编译nginx源码安装</h3>
+<p>（1）编译安装</p>
+<pre><code class="prism language-java">make <span class="token operator">&amp;&amp;</span> make install
+</code></pre>
+<p>（2）设置环境变量</p>
+<pre><code class="prism language-java">设置nginx环境变量
+echo 'export <span class="token constant">PATH</span><span class="token operator">=</span>$<span class="token constant">PATH</span><span class="token operator">:</span><span class="token operator">/</span>usr<span class="token operator">/</span>local<span class="token operator">/</span>nginx<span class="token operator">/</span>sbin'  <span class="token operator">&gt;&gt;</span>   <span class="token operator">/</span>etc<span class="token operator">/</span>profile
+source <span class="token operator">/</span>etc<span class="token operator">/</span>profile
+
+设置openresty环境变量
+echo 'export <span class="token constant">PATH</span><span class="token operator">=</span>$<span class="token constant">PATH</span><span class="token operator">:</span><span class="token operator">/</span>usr<span class="token operator">/</span>local<span class="token operator">/</span>openresty<span class="token operator">/</span>nginx<span class="token operator">/</span>sbin'  <span class="token operator">&gt;&gt;</span>   <span class="token operator">/</span>etc<span class="token operator">/</span>profile
+source <span class="token operator">/</span>etc<span class="token operator">/</span>profile
+</code></pre>
+<p>（3）查看nginx版本号</p>
+<pre><code class="prism language-java">nginx<span class="token operator">:</span>
+<span class="token punctuation">[</span>root<span class="token annotation punctuation">@www</span> nginx<span class="token punctuation">]</span># nginx <span class="token operator">-</span>v
+nginx version<span class="token operator">:</span> nginx<span class="token operator">/</span><span class="token number">1.22</span><span class="token number">.1</span>
+<span class="token punctuation">[</span>root<span class="token annotation punctuation">@www</span> nginx<span class="token punctuation">]</span>#
+
+openresty<span class="token operator">:</span>
+<span class="token punctuation">[</span>root<span class="token annotation punctuation">@localhost</span> sbin<span class="token punctuation">]</span># nginx <span class="token operator">-</span>v
+nginx version<span class="token operator">:</span> openresty<span class="token operator">/</span><span class="token number">1.21</span><span class="token number">.4</span><span class="token number">.1</span>
+<span class="token punctuation">[</span>root<span class="token annotation punctuation">@localhost</span> sbin<span class="token punctuation">]</span>#
+
+tengine<span class="token operator">:</span>
+<span class="token punctuation">[</span>root<span class="token annotation punctuation">@localhost</span> <span class="token operator">~</span><span class="token punctuation">]</span># nginx <span class="token operator">-</span>v
+<span class="token class-name">Tengine</span> version<span class="token operator">:</span> <span class="token class-name">Tengine</span><span class="token operator">/</span><span class="token number">2.4</span><span class="token number">.0</span>
+nginx version<span class="token operator">:</span> nginx<span class="token operator">/</span><span class="token number">1.22</span><span class="token number">.1</span>
+<span class="token punctuation">[</span>root<span class="token annotation punctuation">@localhost</span> <span class="token operator">~</span><span class="token punctuation">]</span>#
+</code></pre>
+<p>（4）检查配置文件语法是否正确</p>
+<pre><code class="prism language-java">nginx<span class="token operator">:</span>
+<span class="token punctuation">[</span>root<span class="token annotation punctuation">@www</span> sbin<span class="token punctuation">]</span># nginx <span class="token operator">-</span>t
+nginx<span class="token operator">:</span> the configuration file <span class="token operator">/</span>usr<span class="token operator">/</span>local<span class="token operator">/</span>nginx<span class="token operator">/</span>conf<span class="token operator">/</span>nginx<span class="token punctuation">.</span>conf syntax is ok
+nginx<span class="token operator">:</span> configuration file <span class="token operator">/</span>usr<span class="token operator">/</span>local<span class="token operator">/</span>nginx<span class="token operator">/</span>conf<span class="token operator">/</span>nginx<span class="token punctuation">.</span>conf test is successful
+
+openresty<span class="token operator">:</span>
+<span class="token punctuation">[</span>root<span class="token annotation punctuation">@localhost</span> sbin<span class="token punctuation">]</span># nginx <span class="token operator">-</span>t
+nginx<span class="token operator">:</span> the configuration file <span class="token operator">/</span>usr<span class="token operator">/</span>local<span class="token operator">/</span>openresty<span class="token operator">/</span>nginx<span class="token operator">/</span>conf<span class="token operator">/</span>nginx<span class="token punctuation">.</span>conf syntax is ok
+nginx<span class="token operator">:</span> configuration file <span class="token operator">/</span>usr<span class="token operator">/</span>local<span class="token operator">/</span>openresty<span class="token operator">/</span>nginx<span class="token operator">/</span>conf<span class="token operator">/</span>nginx<span class="token punctuation">.</span>conf test is successful
+<span class="token punctuation">[</span>root<span class="token annotation punctuation">@localhost</span> sbin<span class="token punctuation">]</span>#
+</code></pre>
+<p>（5）启动nginx</p>
+<pre><code class="prism language-java">nginx                  # 启动nginx
+nginx <span class="token operator">-</span>s reload        # 重新载入配置文件
+nginx <span class="token operator">-</span>s stop          # 关闭 <span class="token class-name">Nginx</span>
+nginx <span class="token operator">-</span>s quit          # 关闭<span class="token class-name">Nginx</span> 
+</code></pre>
+<p>（6）编写启动脚本</p>
+<pre><code class="prism language-java">cd  <span class="token operator">/</span>usr<span class="token operator">/</span>lib<span class="token operator">/</span>systemd<span class="token operator">/</span>system
+vim nginx<span class="token punctuation">.</span>service
+
+
+对于nginx和tengine：
+内容如下：
+<span class="token punctuation">[</span><span class="token class-name">Unit</span><span class="token punctuation">]</span>
+<span class="token class-name">Description</span><span class="token operator">=</span><span class="token class-name">The</span> nginx <span class="token constant">HTTP</span> and reverse proxy server
+<span class="token class-name">After</span><span class="token operator">=</span>network<span class="token punctuation">.</span>target remote<span class="token operator">-</span>fs<span class="token punctuation">.</span>target nss<span class="token operator">-</span>lookup<span class="token punctuation">.</span>target
+
+<span class="token punctuation">[</span><span class="token class-name">Service</span><span class="token punctuation">]</span>
+<span class="token class-name">Type</span><span class="token operator">=</span>forking
+<span class="token class-name">PIDFile</span><span class="token operator">=</span><span class="token operator">/</span>usr<span class="token operator">/</span>local<span class="token operator">/</span>nginx<span class="token operator">/</span>logs<span class="token operator">/</span>nginx<span class="token punctuation">.</span>pid
+<span class="token class-name">ExecStartPost</span><span class="token operator">=</span><span class="token operator">/</span>bin<span class="token operator">/</span>sleep <span class="token number">0.1</span>
+# <span class="token class-name">Nginx</span> will fail <span class="token keyword">to</span> <span class="token namespace">start</span> <span class="token keyword">if</span> <span class="token operator">/</span>run<span class="token operator">/</span>nginx<span class="token punctuation">.</span>pid already exists but has the wrong
+# <span class="token class-name">SELinux</span> <span class="token class-name"><span class="token namespace">context<span class="token punctuation">.</span></span> This</span> might happen when running `nginx <span class="token operator">-</span>t` from the <span class="token class-name"><span class="token namespace">cmdline<span class="token punctuation">.</span></span>
+ExecStartPre</span><span class="token operator">=</span><span class="token operator">/</span>usr<span class="token operator">/</span>bin<span class="token operator">/</span>rm <span class="token operator">-</span>f <span class="token operator">/</span>usr<span class="token operator">/</span>local<span class="token operator">/</span>nginx<span class="token operator">/</span>logs<span class="token operator">/</span>nginx<span class="token punctuation">.</span>pid
+<span class="token class-name">ExecStartPre</span><span class="token operator">=</span><span class="token operator">/</span>usr<span class="token operator">/</span>local<span class="token operator">/</span>nginx<span class="token operator">/</span>sbin<span class="token operator">/</span>nginx <span class="token operator">-</span>t <span class="token operator">-</span>c <span class="token operator">/</span>usr<span class="token operator">/</span>local<span class="token operator">/</span>nginx<span class="token operator">/</span>conf<span class="token operator">/</span>nginx<span class="token punctuation">.</span>conf
+<span class="token class-name">ExecStart</span><span class="token operator">=</span><span class="token operator">/</span>usr<span class="token operator">/</span>local<span class="token operator">/</span>nginx<span class="token operator">/</span>sbin<span class="token operator">/</span>nginx <span class="token operator">-</span>c <span class="token operator">/</span>usr<span class="token operator">/</span>local<span class="token operator">/</span>nginx<span class="token operator">/</span>conf<span class="token operator">/</span>nginx<span class="token punctuation">.</span>conf
+<span class="token class-name">ExecReload</span><span class="token operator">=</span><span class="token operator">/</span>bin<span class="token operator">/</span>kill <span class="token operator">-</span>s <span class="token constant">HUP</span> $<span class="token constant">MAINPID</span>
+<span class="token class-name">ExecStop</span><span class="token operator">=</span><span class="token operator">/</span>bin<span class="token operator">/</span>kill <span class="token operator">-</span>s <span class="token constant">QUIT</span> $<span class="token constant">MAINPID</span>
+<span class="token class-name">KillSignal</span><span class="token operator">=</span><span class="token constant">SIGQUIT</span>
+<span class="token class-name">TimeoutStopSec</span><span class="token operator">=</span><span class="token number">5</span>
+<span class="token class-name">KillMode</span><span class="token operator">=</span>mixed
+<span class="token class-name">PrivateTmp</span><span class="token operator">=</span><span class="token boolean">true</span>
+
+<span class="token punctuation">[</span><span class="token class-name">Install</span><span class="token punctuation">]</span>
+<span class="token class-name">WantedBy</span><span class="token operator">=</span>multi<span class="token operator">-</span>user<span class="token punctuation">.</span>target
+
+<span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">=</span>
+对于openresty<span class="token operator">:</span>
+内容如下：
+<span class="token punctuation">[</span><span class="token class-name">Unit</span><span class="token punctuation">]</span>
+<span class="token class-name">Description</span><span class="token operator">=</span><span class="token class-name">The</span> nginx <span class="token constant">HTTP</span> and reverse proxy server
+<span class="token class-name">After</span><span class="token operator">=</span>network<span class="token punctuation">.</span>target remote<span class="token operator">-</span>fs<span class="token punctuation">.</span>target nss<span class="token operator">-</span>lookup<span class="token punctuation">.</span>target
+
+<span class="token punctuation">[</span><span class="token class-name">Service</span><span class="token punctuation">]</span>
+<span class="token class-name">Type</span><span class="token operator">=</span>forking
+<span class="token class-name">PIDFile</span><span class="token operator">=</span><span class="token operator">/</span>usr<span class="token operator">/</span>local<span class="token operator">/</span>openresty<span class="token operator">/</span>nginx<span class="token operator">/</span>logs<span class="token operator">/</span>nginx<span class="token punctuation">.</span>pid
+<span class="token class-name">ExecStartPost</span><span class="token operator">=</span><span class="token operator">/</span>bin<span class="token operator">/</span>sleep <span class="token number">0.1</span>
+# <span class="token class-name">Nginx</span> will fail <span class="token keyword">to</span> <span class="token namespace">start</span> <span class="token keyword">if</span> <span class="token operator">/</span>run<span class="token operator">/</span>nginx<span class="token punctuation">.</span>pid already exists but has the wrong
+# <span class="token class-name">SELinux</span> <span class="token class-name"><span class="token namespace">context<span class="token punctuation">.</span></span> This</span> might happen when running `nginx <span class="token operator">-</span>t` from the <span class="token class-name"><span class="token namespace">cmdline<span class="token punctuation">.</span></span>
+ExecStartPre</span><span class="token operator">=</span><span class="token operator">/</span>usr<span class="token operator">/</span>bin<span class="token operator">/</span>rm <span class="token operator">-</span>f <span class="token operator">/</span>usr<span class="token operator">/</span>local<span class="token operator">/</span>openresty<span class="token operator">/</span>nginx<span class="token operator">/</span>logs<span class="token operator">/</span>nginx<span class="token punctuation">.</span>pid
+<span class="token class-name">ExecStartPre</span><span class="token operator">=</span><span class="token operator">/</span>usr<span class="token operator">/</span>local<span class="token operator">/</span>openresty<span class="token operator">/</span>nginx<span class="token operator">/</span>sbin<span class="token operator">/</span>nginx <span class="token operator">-</span>t <span class="token operator">-</span>c <span class="token operator">/</span>usr<span class="token operator">/</span>local<span class="token operator">/</span>openresty<span class="token operator">/</span>nginx<span class="token operator">/</span>conf<span class="token operator">/</span>nginx<span class="token punctuation">.</span>conf
+<span class="token class-name">ExecStart</span><span class="token operator">=</span><span class="token operator">/</span>usr<span class="token operator">/</span>local<span class="token operator">/</span>openresty<span class="token operator">/</span>nginx<span class="token operator">/</span>sbin<span class="token operator">/</span>nginx <span class="token operator">-</span>c <span class="token operator">/</span>usr<span class="token operator">/</span>local<span class="token operator">/</span>openresty<span class="token operator">/</span>nginx<span class="token operator">/</span>conf<span class="token operator">/</span>nginx<span class="token punctuation">.</span>conf
+<span class="token class-name">ExecReload</span><span class="token operator">=</span><span class="token operator">/</span>bin<span class="token operator">/</span>kill <span class="token operator">-</span>s <span class="token constant">HUP</span> $<span class="token constant">MAINPID</span>
+<span class="token class-name">ExecStop</span><span class="token operator">=</span><span class="token operator">/</span>bin<span class="token operator">/</span>kill <span class="token operator">-</span>s <span class="token constant">QUIT</span> $<span class="token constant">MAINPID</span>
+<span class="token class-name">KillSignal</span><span class="token operator">=</span><span class="token constant">SIGQUIT</span>
+<span class="token class-name">TimeoutStopSec</span><span class="token operator">=</span><span class="token number">5</span>
+<span class="token class-name">KillMode</span><span class="token operator">=</span>mixed
+<span class="token class-name">PrivateTmp</span><span class="token operator">=</span><span class="token boolean">true</span>
+
+<span class="token punctuation">[</span><span class="token class-name">Install</span><span class="token punctuation">]</span>
+<span class="token class-name">WantedBy</span><span class="token operator">=</span>multi<span class="token operator">-</span>user<span class="token punctuation">.</span>target
+
+</code></pre>
+<pre><code class="prism language-java"># 重新加载服务文件
+systemctl daemon<span class="token operator">-</span>reload 
+# 开启<span class="token operator">|</span>停止<span class="token operator">|</span>重新加载<span class="token operator">|</span>重启<span class="token operator">|</span>
+systemctl start<span class="token operator">|</span>stop<span class="token operator">|</span>reload<span class="token operator">|</span>restart<span class="token operator">|</span>status nginx<span class="token punctuation">.</span>service
+
+</code></pre>
+<p>（7）设置开机自启</p>
+<pre><code class="prism language-java">systemctl enable nginx<span class="token punctuation">.</span>service
+</code></pre>
+<p>（8）防火墙放行</p>
+<pre><code class="prism language-java">firewall<span class="token operator">-</span>cmd <span class="token operator">--</span>zone<span class="token operator">=</span><span class="token keyword">public</span> <span class="token operator">--</span>add<span class="token operator">-</span>port<span class="token operator">=</span><span class="token number">80</span><span class="token operator">/</span>tcp <span class="token operator">--</span>permanent
+firewall<span class="token operator">-</span>cmd <span class="token operator">--</span>reload 
+</code></pre>
+<h3><a id="3_linux_179"></a>3. 配置linux镜像源代理</h3>
+<p>编辑nginx.conf (nginx)</p>
+<pre><code class="prism language-java">#user  nobody<span class="token punctuation">;</span>
+worker_processes  <span class="token number">1</span><span class="token punctuation">;</span>
+
+#error_log  logs<span class="token operator">/</span>error<span class="token punctuation">.</span>log<span class="token punctuation">;</span>
+#error_log  logs<span class="token operator">/</span>error<span class="token punctuation">.</span>log  notice<span class="token punctuation">;</span>
+#error_log  logs<span class="token operator">/</span>error<span class="token punctuation">.</span>log  info<span class="token punctuation">;</span>
+
+#pid        logs<span class="token operator">/</span>nginx<span class="token punctuation">.</span>pid<span class="token punctuation">;</span>
+
+events <span class="token punctuation">{</span>
+    worker_connections  <span class="token number">1024</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+http <span class="token punctuation">{</span>
+    include       mime<span class="token punctuation">.</span>types<span class="token punctuation">;</span>
+    default_type  application<span class="token operator">/</span>octet<span class="token operator">-</span>stream<span class="token punctuation">;</span>
+
+    #log_format  main  '$remote_addr <span class="token operator">-</span> $remote_user <span class="token punctuation">[</span>$time_local<span class="token punctuation">]</span> <span class="token string">"$request"</span> '
+    #                  '$status $body_bytes_sent <span class="token string">"$http_referer"</span> '
+    #                  '<span class="token string">"$http_user_agent"</span> <span class="token string">"$http_x_forwarded_for"</span>'<span class="token punctuation">;</span>
+
+    #access_log  logs<span class="token operator">/</span>access<span class="token punctuation">.</span>log  main<span class="token punctuation">;</span>
+
+    sendfile        on<span class="token punctuation">;</span>
+    #tcp_nopush     on<span class="token punctuation">;</span>
+
+    #keepalive_timeout  <span class="token number">0</span><span class="token punctuation">;</span>
+    keepalive_timeout  <span class="token number">65</span><span class="token punctuation">;</span>
+
+    server <span class="token punctuation">{</span>
+        listen       <span class="token number">80</span><span class="token punctuation">;</span>
+        server_name  localhost<span class="token punctuation">;</span>
+        root     <span class="token operator">/</span>mnt<span class="token punctuation">;</span>                                    #添加这一行
+        
+        location <span class="token operator">/</span> <span class="token punctuation">{</span>
+            #root   html<span class="token punctuation">;</span>                                    #注释这一行
+            #index  index<span class="token punctuation">.</span>html index<span class="token punctuation">.</span>htm<span class="token punctuation">;</span>        #注释这一行
+            autoindex              on<span class="token punctuation">;</span>      
+            autoindex_exact_size   on<span class="token punctuation">;</span>             #添加这一行
+            autoindex_localtime    on<span class="token punctuation">;</span>               #添加这一行
+        <span class="token punctuation">}</span>
+
+        error_page   <span class="token number">500</span> <span class="token number">502</span> <span class="token number">503</span> <span class="token number">504</span>  <span class="token operator">/</span><span class="token number">50</span>x<span class="token punctuation">.</span>html<span class="token punctuation">;</span>
+        location <span class="token operator">=</span> <span class="token operator">/</span><span class="token number">50</span>x<span class="token punctuation">.</span>html <span class="token punctuation">{</span>
+            root   html<span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+
+</code></pre>
+<p>编辑nginx.conf (openresty)</p>
+<pre><code>
+#user  nobody;
+worker_processes  1;
+
+#error_log  logs/error.log;
+#error_log  logs/error.log  notice;
+#error_log  logs/error.log  info;
+
+#pid        logs/nginx.pid;
+
+
+events {
+    worker_connections  1024;
+}
+
+
+http {
+    include       mime.types;
+    default_type  application/octet-stream;
+
+    #log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
+    #                  '$status $body_bytes_sent "$http_referer" '
+    #                  '"$http_user_agent" "$http_x_forwarded_for"';
+
+    #access_log  logs/access.log  main;
+
+    sendfile        on;
+    #tcp_nopush     on;
+
+    #keepalive_timeout  0;
+    keepalive_timeout  65;
+
+    #gzip  on;
+
+    server {
+        listen       80;
+        server_name  localhost;
+
+        #charset koi8-r;
+
+        #access_log  logs/host.access.log  main;
+
+        location / {
+            autoindex              on;
+            autoindex_exact_size   on;
+            autoindex_localtime    on;
+            root   /mnt;
+            #index  index.html index.htm;
+        }
+
+        #error_page  404              /404.html;
+
+        # redirect server error pages to the static page /50x.html
+        #
+        error_page   500 502 503 504  /50x.html;
+        location = /50x.html {
+            root   html;
+        }
+
+        # proxy the PHP scripts to Apache listening on 127.0.0.1:80
+        #
+        #location ~ \.php$ {
+        #    proxy_pass   http://127.0.0.1;
+        #}
+
+        # pass the PHP scripts to FastCGI server listening on 127.0.0.1:9000
+        #
+        #location ~ \.php$ {
+        #    root           html;
+        #    fastcgi_pass   127.0.0.1:9000;
+        #    fastcgi_index  index.php;
+        #    fastcgi_param  SCRIPT_FILENAME  /scripts$fastcgi_script_name;
+        #    include        fastcgi_params;
+        #}
+
+        # deny access to .htaccess files, if Apache's document root
+        # concurs with nginx's one
+        #
+        #location ~ /\.ht {
+        #    deny  all;
+        #}
+    }
+
+
+    # another virtual host using mix of IP-, name-, and port-based configuration
+    #
+    #server {
+    #    listen       8000;
+    #    listen       somename:8080;
+    #    server_name  somename  alias  another.alias;
+
+    #    location / {
+    #        root   html;
+    #        index  index.html index.htm;
+    #    }
+    #}
+
+
+    # HTTPS server
+    #
+    #server {
+    #    listen       443 ssl;
+    #    server_name  localhost;
+
+    #    ssl_certificate      cert.pem;
+    #    ssl_certificate_key  cert.key;
+
+    #    ssl_session_cache    shared:SSL:1m;
+    #    ssl_session_timeout  5m;
+
+    #    ssl_ciphers  HIGH:!aNULL:!MD5;
+    #    ssl_prefer_server_ciphers  on;
+
+    #    location / {
+    #        root   html;
+    #        index  index.html index.htm;
+    #    }
+    #}
+
+}
+
+</code></pre>
+<p>（2）挂载镜像源</p>
+<pre><code>第一种(nginx)：
+挂载dvd光盘设备中的iso镜像
+mount  /dev/sr0  /mnt
+挂载本地iso文件
+mount  -o  loop  filename.iso /mnt
+例如：  mount  -o  loop  Fedora-Server-dvd-x86_64-33-1.2.iso /cdrom
+
+第二种（openresty）：
+mount /dev/sr0  /mnt/openEuler20.03
+</code></pre>
+<p>（3）编辑openEuler的镜像源配置文件</p>
+<pre><code class="prism language-java">vim <span class="token operator">/</span>etc<span class="token operator">/</span>yum<span class="token punctuation">.</span>repos<span class="token punctuation">.</span>d<span class="token operator">/</span>local_nginx<span class="token punctuation">.</span>repo
+
+修改内容如下：
+<span class="token punctuation">[</span><span class="token constant">OS</span><span class="token punctuation">]</span>
+name<span class="token operator">=</span><span class="token class-name">OS</span>
+baseurl<span class="token operator">=</span>http<span class="token operator">:</span><span class="token operator">/</span><span class="token operator">/</span><span class="token number">192.168</span><span class="token number">.224</span><span class="token number">.34</span>
+enabled<span class="token operator">=</span><span class="token number">1</span>
+gpgcheck<span class="token operator">=</span><span class="token number">0</span>
+gpgkey<span class="token operator">=</span>http<span class="token operator">:</span><span class="token operator">/</span><span class="token operator">/</span><span class="token number">192.168</span><span class="token number">.224</span><span class="token number">.34</span><span class="token operator">/</span><span class="token constant">RPM</span><span class="token operator">-</span><span class="token constant">GPG</span><span class="token operator">-</span><span class="token constant">KEY</span><span class="token operator">-</span>openEuler
+<span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">=</span>
+
+vim <span class="token operator">/</span>etc<span class="token operator">/</span>yum<span class="token punctuation">.</span>repos<span class="token punctuation">.</span>d<span class="token operator">/</span>local_openresty<span class="token punctuation">.</span>repo
+修改内容如下： 
+
+<span class="token punctuation">[</span>openEuler<span class="token operator">-</span><span class="token constant">OS</span><span class="token punctuation">]</span>
+name<span class="token operator">=</span>openEuler<span class="token operator">-</span><span class="token class-name">OS</span>
+baseurl<span class="token operator">=</span>http<span class="token operator">:</span><span class="token operator">/</span><span class="token operator">/</span><span class="token number">192.168</span><span class="token number">.224</span><span class="token number">.33</span><span class="token operator">/</span>openEuler20<span class="token punctuation">.</span><span class="token number">03</span>
+enabled<span class="token operator">=</span><span class="token number">1</span>
+gpgcheck<span class="token operator">=</span><span class="token number">0</span>
+gpgkey<span class="token operator">=</span>http<span class="token operator">:</span><span class="token operator">/</span><span class="token operator">/</span><span class="token number">192.168</span><span class="token number">.224</span><span class="token number">.33</span><span class="token operator">/</span>openEuler20<span class="token punctuation">.</span><span class="token number">03</span><span class="token operator">/</span><span class="token constant">RPM</span><span class="token operator">-</span><span class="token constant">GPG</span><span class="token operator">-</span><span class="token constant">KEY</span><span class="token operator">-</span>openEuler
+</code></pre>
+<p>（4）使用配置好的nginx代理镜像源下载安装软件包</p>
+<pre><code class="prism language-java"><span class="token punctuation">[</span>root<span class="token annotation punctuation">@www</span> conf<span class="token punctuation">]</span># yum install <span class="token operator">-</span>y vim
+<span class="token constant">OS</span>                                                                                                                         <span class="token number">22</span> <span class="token constant">MB</span><span class="token operator">/</span>s <span class="token operator">|</span>  <span class="token number">16</span> <span class="token constant">MB</span>     <span class="token number">00</span><span class="token operator">:</span><span class="token number">00</span>
+<span class="token class-name">Last</span> metadata expiration check<span class="token operator">:</span> <span class="token number">0</span><span class="token operator">:</span><span class="token number">00</span><span class="token operator">:</span><span class="token number">01</span> ago on <span class="token class-name">Wed</span> <span class="token number">17</span> <span class="token class-name">May</span> <span class="token number">2023</span> <span class="token number">10</span><span class="token operator">:</span><span class="token number">32</span><span class="token operator">:</span><span class="token number">25</span> <span class="token constant">PM</span> <span class="token class-name">CST<span class="token punctuation">.</span>
+Dependencies</span> resolved<span class="token punctuation">.</span>
+<span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span>
+ <span class="token class-name">Package</span>                                  <span class="token class-name">Architecture</span>                     <span class="token class-name">Version</span>                                     <span class="token class-name">Repository</span>                    <span class="token class-name">Size</span>
+<span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span>
+<span class="token class-name">Installing</span><span class="token operator">:</span>
+ vim<span class="token operator">-</span>enhanced                             x86_64                           <span class="token number">2</span><span class="token operator">:</span><span class="token number">8.2</span><span class="token operator">-</span><span class="token number">28.</span>oe2203                             <span class="token constant">OS</span>                           <span class="token number">1.4</span> <span class="token class-name">M</span>
+<span class="token class-name">Installing</span> dependencies<span class="token operator">:</span>
+ gpm<span class="token operator">-</span>libs                                 x86_64                           <span class="token number">1.20</span><span class="token number">.7</span><span class="token operator">-</span><span class="token number">25.</span>oe2203                            <span class="token constant">OS</span>                            <span class="token number">19</span> k
+ vim<span class="token operator">-</span>common                               x86_64                           <span class="token number">2</span><span class="token operator">:</span><span class="token number">8.2</span><span class="token operator">-</span><span class="token number">28.</span>oe2203                             <span class="token constant">OS</span>                           <span class="token number">6.8</span> <span class="token class-name">M</span>
+ vim<span class="token operator">-</span>filesystem                           noarch                           <span class="token number">2</span><span class="token operator">:</span><span class="token number">8.2</span><span class="token operator">-</span><span class="token number">28.</span>oe2203                             <span class="token constant">OS</span>                            <span class="token number">13</span> k
+
+<span class="token class-name">Transaction</span> <span class="token class-name">Summary</span>
+<span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span><span class="token operator">==</span>
+<span class="token class-name">Install</span>  <span class="token number">4</span> <span class="token class-name">Packages</span>
+
+<span class="token class-name">Total</span> download size<span class="token operator">:</span> <span class="token number">8.2</span> <span class="token class-name">M</span>
+<span class="token class-name">Installed</span> size<span class="token operator">:</span> <span class="token number">32</span> <span class="token class-name">M</span>
+<span class="token class-name">Downloading</span> <span class="token class-name">Packages</span><span class="token operator">:</span>
+<span class="token punctuation">(</span><span class="token number">1</span><span class="token operator">/</span><span class="token number">4</span><span class="token punctuation">)</span><span class="token operator">:</span> gpm<span class="token operator">-</span>libs<span class="token operator">-</span><span class="token number">1.20</span><span class="token number">.7</span><span class="token operator">-</span><span class="token number">25.</span>oe2203<span class="token punctuation">.</span>x86_64<span class="token punctuation">.</span>rpm                                                                               <span class="token number">7.7</span> <span class="token constant">MB</span><span class="token operator">/</span>s <span class="token operator">|</span>  <span class="token number">19</span> kB     <span class="token number">00</span><span class="token operator">:</span><span class="token number">00</span>
+<span class="token punctuation">(</span><span class="token number">2</span><span class="token operator">/</span><span class="token number">4</span><span class="token punctuation">)</span><span class="token operator">:</span> vim<span class="token operator">-</span>filesystem<span class="token operator">-</span><span class="token number">8.2</span><span class="token operator">-</span><span class="token number">28.</span>oe2203<span class="token punctuation">.</span>noarch<span class="token punctuation">.</span>rpm                                                                            <span class="token number">7.2</span> <span class="token constant">MB</span><span class="token operator">/</span>s <span class="token operator">|</span>  <span class="token number">13</span> kB     <span class="token number">00</span><span class="token operator">:</span><span class="token number">00</span>
+<span class="token punctuation">(</span><span class="token number">3</span><span class="token operator">/</span><span class="token number">4</span><span class="token punctuation">)</span><span class="token operator">:</span> vim<span class="token operator">-</span>enhanced<span class="token operator">-</span><span class="token number">8.2</span><span class="token operator">-</span><span class="token number">28.</span>oe2203<span class="token punctuation">.</span>x86_64<span class="token punctuation">.</span>rpm                                                                               <span class="token number">20</span> <span class="token constant">MB</span><span class="token operator">/</span>s <span class="token operator">|</span> <span class="token number">1.4</span> <span class="token constant">MB</span>     <span class="token number">00</span><span class="token operator">:</span><span class="token number">00</span>
+<span class="token punctuation">(</span><span class="token number">4</span><span class="token operator">/</span><span class="token number">4</span><span class="token punctuation">)</span><span class="token operator">:</span> vim<span class="token operator">-</span>common<span class="token operator">-</span><span class="token number">8.2</span><span class="token operator">-</span><span class="token number">28.</span>oe2203<span class="token punctuation">.</span>x86_64<span class="token punctuation">.</span>rpm                                                                                 <span class="token number">20</span> <span class="token constant">MB</span><span class="token operator">/</span>s <span class="token operator">|</span> <span class="token number">6.8</span> <span class="token constant">MB</span>     <span class="token number">00</span><span class="token operator">:</span><span class="token number">00</span>
+<span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span>
+<span class="token class-name">Total</span>                                                                                                                      <span class="token number">24</span> <span class="token constant">MB</span><span class="token operator">/</span>s <span class="token operator">|</span> <span class="token number">8.2</span> <span class="token constant">MB</span>     <span class="token number">00</span><span class="token operator">:</span><span class="token number">00</span>
+<span class="token class-name">Running</span> transaction check
+<span class="token class-name">Transaction</span> check <span class="token class-name"><span class="token namespace">succeeded<span class="token punctuation">.</span></span>
+Running</span> transaction test
+<span class="token class-name">Transaction</span> test <span class="token class-name"><span class="token namespace">succeeded<span class="token punctuation">.</span></span>
+Running</span> transaction
+  <span class="token class-name">Preparing</span>        <span class="token operator">:</span>                                                                                                                                  <span class="token number">1</span><span class="token operator">/</span><span class="token number">1</span>
+  <span class="token class-name">Installing</span>       <span class="token operator">:</span> vim<span class="token operator">-</span>filesystem<span class="token operator">-</span><span class="token number">2</span><span class="token operator">:</span><span class="token number">8.2</span><span class="token operator">-</span><span class="token number">28.</span>oe2203<span class="token punctuation">.</span>noarch                                                                                            <span class="token number">1</span><span class="token operator">/</span><span class="token number">4</span>
+  <span class="token class-name">Installing</span>       <span class="token operator">:</span> vim<span class="token operator">-</span>common<span class="token operator">-</span><span class="token number">2</span><span class="token operator">:</span><span class="token number">8.2</span><span class="token operator">-</span><span class="token number">28.</span>oe2203<span class="token punctuation">.</span>x86_64                                                                                                <span class="token number">2</span><span class="token operator">/</span><span class="token number">4</span>
+  <span class="token class-name">Installing</span>       <span class="token operator">:</span> gpm<span class="token operator">-</span>libs<span class="token operator">-</span><span class="token number">1.20</span><span class="token number">.7</span><span class="token operator">-</span><span class="token number">25.</span>oe2203<span class="token punctuation">.</span>x86_64                                                                                                 <span class="token number">3</span><span class="token operator">/</span><span class="token number">4</span>
+  <span class="token class-name">Installing</span>       <span class="token operator">:</span> vim<span class="token operator">-</span>enhanced<span class="token operator">-</span><span class="token number">2</span><span class="token operator">:</span><span class="token number">8.2</span><span class="token operator">-</span><span class="token number">28.</span>oe2203<span class="token punctuation">.</span>x86_64                                                                                              <span class="token number">4</span><span class="token operator">/</span><span class="token number">4</span>
+  <span class="token class-name">Running</span> scriptlet<span class="token operator">:</span> vim<span class="token operator">-</span>enhanced<span class="token operator">-</span><span class="token number">2</span><span class="token operator">:</span><span class="token number">8.2</span><span class="token operator">-</span><span class="token number">28.</span>oe2203<span class="token punctuation">.</span>x86_64                                                                                              <span class="token number">4</span><span class="token operator">/</span><span class="token number">4</span>
+  <span class="token class-name">Running</span> scriptlet<span class="token operator">:</span> vim<span class="token operator">-</span>common<span class="token operator">-</span><span class="token number">2</span><span class="token operator">:</span><span class="token number">8.2</span><span class="token operator">-</span><span class="token number">28.</span>oe2203<span class="token punctuation">.</span>x86_64                                                                                                <span class="token number">4</span><span class="token operator">/</span><span class="token number">4</span>
+  <span class="token class-name">Verifying</span>        <span class="token operator">:</span> gpm<span class="token operator">-</span>libs<span class="token operator">-</span><span class="token number">1.20</span><span class="token number">.7</span><span class="token operator">-</span><span class="token number">25.</span>oe2203<span class="token punctuation">.</span>x86_64                                                                                                 <span class="token number">1</span><span class="token operator">/</span><span class="token number">4</span>
+  <span class="token class-name">Verifying</span>        <span class="token operator">:</span> vim<span class="token operator">-</span>common<span class="token operator">-</span><span class="token number">2</span><span class="token operator">:</span><span class="token number">8.2</span><span class="token operator">-</span><span class="token number">28.</span>oe2203<span class="token punctuation">.</span>x86_64                                                                                                <span class="token number">2</span><span class="token operator">/</span><span class="token number">4</span>
+  <span class="token class-name">Verifying</span>        <span class="token operator">:</span> vim<span class="token operator">-</span>enhanced<span class="token operator">-</span><span class="token number">2</span><span class="token operator">:</span><span class="token number">8.2</span><span class="token operator">-</span><span class="token number">28.</span>oe2203<span class="token punctuation">.</span>x86_64                                                                                              <span class="token number">3</span><span class="token operator">/</span><span class="token number">4</span>
+  <span class="token class-name">Verifying</span>        <span class="token operator">:</span> vim<span class="token operator">-</span>filesystem<span class="token operator">-</span><span class="token number">2</span><span class="token operator">:</span><span class="token number">8.2</span><span class="token operator">-</span><span class="token number">28.</span>oe2203<span class="token punctuation">.</span>noarch                                                                                            <span class="token number">4</span><span class="token operator">/</span><span class="token number">4</span>
+
+<span class="token class-name">Installed</span><span class="token operator">:</span>
+  gpm<span class="token operator">-</span>libs<span class="token operator">-</span><span class="token number">1.20</span><span class="token number">.7</span><span class="token operator">-</span><span class="token number">25.</span>oe2203<span class="token punctuation">.</span>x86_64    vim<span class="token operator">-</span>common<span class="token operator">-</span><span class="token number">2</span><span class="token operator">:</span><span class="token number">8.2</span><span class="token operator">-</span><span class="token number">28.</span>oe2203<span class="token punctuation">.</span>x86_64    vim<span class="token operator">-</span>enhanced<span class="token operator">-</span><span class="token number">2</span><span class="token operator">:</span><span class="token number">8.2</span><span class="token operator">-</span><span class="token number">28.</span>oe2203<span class="token punctuation">.</span>x86_64    vim<span class="token operator">-</span>filesystem<span class="token operator">-</span><span class="token number">2</span><span class="token operator">:</span><span class="token number">8.2</span><span class="token operator">-</span><span class="token number">28.</span>oe2203<span class="token punctuation">.</span>noarch
+
+<span class="token class-name">Complete</span><span class="token operator">!</span>
+
+</code></pre>
+<h3><a id="4__452"></a>4. 配置数据库代理</h3>
+<pre><code>#user  nobody;
+worker_processes  1;
+
+#error_log  logs/error.log;
+#error_log  logs/error.log  notice;
+#error_log  logs/error.log  info;
+
+#pid        logs/nginx.pid;
+
+
+events {
+    worker_connections  1024;
+}
+
+#数据库代理配置===================================================
+stream {
+    upstream mysql {
+         server 192.168.227.197:3306;
+     }
+     server {
+         listen 3333;
+         proxy_connect_timeout 10s;
+         proxy_timeout 24h;
+         proxy_pass mysql;
+    }
+}
+#数据库代理配置===================================================
+
+http {
+    include       mime.types;
+    default_type  application/octet-stream;
+
+    #log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
+    #                  '$status $body_bytes_sent "$http_referer" '
+    #                  '"$http_user_agent" "$http_x_forwarded_for"';
+
+    #access_log  logs/access.log  main;
+
+    sendfile        on;
+    #tcp_nopush     on;
+
+    #keepalive_timeout  0;
+    keepalive_timeout  65;
+
+    #gzip  on;
+
+    server {
+        listen       80;
+        server_name  localhost;
+
+        #charset koi8-r;
+
+        #access_log  logs/host.access.log  main;
+
+        location / {
+            root   html;
+            index  index.html index.htm;
+        }
+        
+        error_page   500 502 503 504  /50x.html;
+        location = /50x.html {
+            root   html;
+        }
+    }
+}
+</code></pre>
+</div>
+</body>
+
+</html>

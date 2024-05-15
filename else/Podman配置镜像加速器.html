@@ -1,0 +1,33 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Podman配置镜像加速器</title>
+  <link rel="stylesheet" href="https://stackedit.io/style.css" />
+</head>
+
+<body class="stackedit">
+  <div class="stackedit__html"><p>Podman简介<br>
+Podman主要由红帽发起和推动，是下一代的容器技术，包括如下三个模块：Podman，Skopeo和Buildah<br>
+这三个工具都是符合OCI计划下的工具（github/containers）。主要是由RedHat推动的，他们配合可以完成Docker所有的功能，而且不需要守护程序或访问有root权限的组，更加安全可靠，是下一代容器容器工具。<br>
+安装：<br>
+Centos：yum install podman -y<br>
+原配置文件备份：<br>
+cp /etc/containers/registries.conf /etc/containers/registries.conf.bak<br>
+修改配置文件内容如下：</p>
+<pre><code class="prism language-handlebars"><span class="token variable">unqualified-search-registries</span> <span class="token punctuation">=</span> <span class="token punctuation">[</span><span class="token string">"docker.io"</span><span class="token punctuation">]</span>
+
+<span class="token brackets"><span class="token punctuation">[</span><span class="token punctuation">[</span><span class="token variable">registry</span><span class="token punctuation">]</span></span><span class="token punctuation">]</span>
+<span class="token variable">prefix</span> <span class="token punctuation">=</span> <span class="token string">"docker.io"</span>
+<span class="token variable">location</span> <span class="token punctuation">=</span> <span class="token string">"6drkwgha.mirror.aliyuncs.com"</span>
+
+<span class="token brackets"><span class="token punctuation">[</span><span class="token punctuation">[</span><span class="token variable">registry.mirror</span><span class="token punctuation">]</span></span><span class="token punctuation">]</span>
+<span class="token variable">prefix</span> <span class="token punctuation">=</span> <span class="token string">"docker.io"</span>
+<span class="token variable">location</span> <span class="token punctuation">=</span> <span class="token string">"hub-mirror.c.163.com"</span>
+</code></pre>
+</div>
+</body>
+
+</html>

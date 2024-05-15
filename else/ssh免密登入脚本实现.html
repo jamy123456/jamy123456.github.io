@@ -1,0 +1,85 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ssh免密登入脚本实现</title>
+  <link rel="stylesheet" href="https://stackedit.io/style.css" />
+</head>
+
+<body class="stackedit">
+  <div class="stackedit__html"><h3><a id="1root_0"></a>1、免密登入单台设备脚本实现（这里是root用户，也可以修改其他用户）</h3>
+<pre><code>#!/bin/bash
+#---------------设置ssh免密登入---------------#
+HOST_IP_NODE=10.0.0.31
+HOST_PASS_NODE=0000
+#安装expect软件包
+yum install expect -y
+expect &lt;&lt; EOF
+set timeout 5
+spawn ssh-keygen -t rsa
+expect "id_rsa):" 
+send "\r" 
+expect "passphrase):" 
+send "\r"
+expect "again:"
+send "\r" 
+expect eof
+EOF
+expect &lt;&lt; EOF
+set timeout 5
+spawn ssh-copy-id root@$HOST_IP_NODE
+expect "(yes/no)?" 
+send "yes\r"
+expect "password:" 
+send "$HOST_PASS_NODE\r" 
+expect eof
+EOF
+</code></pre>
+<h3><a id="2root_32"></a>2、免密登入多台设备脚本实现（这里是root用户，也可以修改其他用户）</h3>
+<pre><code>#!/bin/bash
+#---------------设置ssh免密登入对台设备---------------#
+#设置要登入的节点ip地址（空格隔开）
+HOST_IP_NODE=(ip1 ip2 ip3 ... ipn)
+#设置要登入的节点ip的密码（空格隔开）
+HOST_PASS_NODE=(ps1 ps2 ps3 ... psn)
+#安装expect软件包
+yum install expect -y
+expect &lt;&lt; EOF
+set timeout 5
+spawn ssh-keygen -t rsa
+expect "id_rsa):" 
+send "\r" 
+expect "passphrase):" 
+send "\r"
+expect "again:"
+send "\r" 
+expect eof
+EOF
+ 
+copy-id(){
+expect &lt;&lt; EOF
+set timeout 5
+spawn ssh-copy-id root@$1
+expect "(yes/no)?" 
+send "yes\r"
+expect "password:" 
+send "$2\r" 
+expect eof
+EOF
+}
+ 
+#循环遍历
+num=${#HOST_IP_NODE[*]}
+fun(){
+    for i in 0 1 ... $num
+      do
+        copy-id root@${HOST_IP_NODE[i]} ${HOST_PASS_NODE[i]}
+      done
+}
+</code></pre>
+</div>
+</body>
+
+</html>

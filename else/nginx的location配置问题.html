@@ -1,0 +1,44 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>nginx的location配置问题</title>
+  <link rel="stylesheet" href="https://stackedit.io/style.css" />
+</head>
+
+<body class="stackedit">
+  <div class="stackedit__html"><h3><a id="_0"></a>第一种场景：</h3>
+<pre><code class="prism language-linux">访问地址：http://192.168.148.128/tomcat/test    --&gt;  /tomcat/test
+代理地址：http://192.168.148.128:8080/
+location   /tomcat/
+
+
+解释：如果代理地址结尾有斜杠(/),访问地址监听端口后面的内容，会去除掉localtion匹配部分，剩下的内容会拼接到代理地址最后面，由此最终得到访问地址   http://192.168.148.128:8080/test
+</code></pre>
+<h3><a id="_11"></a>第二种场景：</h3>
+<pre><code class="prism language-linux">访问地址：http://192.168.148.128/tomcat/test    --&gt;  /tomcat/test
+代理地址：http://192.168.148.128:8080/
+location   /tomcat
+
+解释：如果代理地址结尾有斜杠(/),访问地址监听端口后面的内容，会去除掉localtion匹配部分，剩下的内容会拼接到代理地址最后面，由此最终得到访问地址     http://192.168.148.128:8080//test
+</code></pre>
+<h3><a id="_23"></a>第三种场景：</h3>
+<pre><code class="prism language-linux">访问地址：http://192.168.148.128/tomcat/test    --&gt;  /tomcat/test
+代理地址：http://192.168.148.128:8080
+location   /tomcat/
+
+解释：如果代理地址结尾没有斜杠(/),访问地址监听端口后面的内容，会直接拼接到代理地址最后面，由此最终得到访问地址   http://192.168.148.128:8080/tomcat/test
+</code></pre>
+<h3><a id="_34"></a>第四种场景：</h3>
+<pre><code class="prism language-linux">访问地址：http://192.168.148.128/tomcat/test    --&gt;  /tomcat/test
+代理地址：http://192.168.148.128:8080
+location   /tomcat
+
+解释：如果代理地址结尾没有斜杠(/),访问地址监听端口后面的内容，会直接拼接到代理地址最后面，由此最终得到访问地址    http://192.168.148.128:8080/tomcat/test
+</code></pre>
+</div>
+</body>
+
+</html>

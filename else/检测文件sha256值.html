@@ -1,0 +1,26 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>检测文件sha256值</title>
+  <link rel="stylesheet" href="https://stackedit.io/style.css" />
+</head>
+
+<body class="stackedit">
+  <div class="stackedit__html"><pre><code class="prism language-linux">window下在cmd命令行窗口执行下面命令：
+certutil -hashfile 文件路径 SHA256
+
+certutil -hashfile 12 SHA256
+
+macOS下在终端执行下面命令：
+shasum -a 256   文件路径
+
+linux下在终端执行下面命令：
+sha256sum   文件路径
+</code></pre>
+</div>
+</body>
+
+</html>

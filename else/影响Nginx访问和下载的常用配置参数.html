@@ -1,0 +1,50 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>影响Nginx访问和下载的常用配置参数</title>
+  <link rel="stylesheet" href="https://stackedit.io/style.css" />
+</head>
+
+<body class="stackedit">
+  <div class="stackedit__html"><h3><a id="1proxy_max_temp_file_size_1"></a>1、proxy_max_temp_file_size</h3>
+<pre><code>一个容易忽略的问题，从Nginx代理的服务器上下载文件时，小于1G的文件可以正常下载，当文件大于1G的时候，下载到1G就突然提示网络失败。本文将详细介绍这个问题的处理过程，对应参数的默认值、最大设置值以及如何进行设置。
+
+我们先了解一下proxy_max_temp_file_size的含义。它是Nginx服务器的一个配置项，用于限制代理服务器在处理请求时能够使用的最大临时文件大小。当代理服务器接收到的数据流或文件超过该大小限制时，它将无法继续保存并处理这些数据。
+
+默认情况下，proxy_max_temp_file_size的值是1024M，即1G。如果某个请求需要处理的临时文件超过了1G大小，代理服务器将无法处理该请求。这时就需要修改这个默认值。
+
+
+proxy_max_temp_file_size = 1024M
+
+那么，proxy_max_temp_file_size的最大设置值是多少呢？取决于操作系统的最大文件大小限制。在32位操作系统中，由于内存地址空间限制，最大只能设置为2G。而在64位操作系统中，由于地址空间不受限制，理论上可以设置为最大4G（需要相应地调整操作系统和Nginx的其他配置项）。
+
+proxy_max_temp_file_size = 2G
+</code></pre>
+<h3><a id="2client_body_timeout_17"></a>2、client_body_timeout</h3>
+<pre><code>在从客户端接收请求体时，Nginx会启动一个计时器来检测超时。如果在指定的时间内没有接收到完整的请求体，连接将被关闭。通过适当设置client_body_timeout参数，我们可以控制请求体接收的超时时间，避免长时间阻塞连接。
+</code></pre>
+<h3><a id="3send_timeout_22"></a>3、send_timeout</h3>
+<pre><code>类似于client_body_timeout，send_timeout用于设置响应发送的超时时间。如果在指定的时间内没有发送完整的响应，连接将被关闭。通过设置合适的send_timeout参数，我们可以确保响应能够及时发送给客户端，提高用户体验。
+</code></pre>
+<h3><a id="4client_body_in_file_only_28"></a>4、client_body_in_file_only</h3>
+<pre><code>默认情况下，当接收到的请求体超过client_body_buffer_size时，Nginx会将请求体写入内存中，然后再将其写入磁盘。然而，通过设置client_body_in_file_only参数为on，我们可以直接将请求体写入磁盘，避免大数据在内存中缓冲，提高性能。
+</code></pre>
+<h3><a id="5client_max_body_size_33"></a>5、client_max_body_size</h3>
+<pre><code>client_max_body_size参数用于限制请求体的最大大小。如果超过该限制，Nginx将返回413状态码，拒绝处理请求。合理设置这个参数可以防止恶意用户上传过大的文件，同时保护服务器。
+</code></pre>
+<h3><a id="6proxy_buffering_38"></a>6、proxy_buffering</h3>
+<pre><code>当Nginx充当反向代理服务器时，proxy_buffering参数控制是否启用响应的缓冲。默认情况下为on，启用缓冲可以提高效率，但会增加响应时间。
+</code></pre>
+<h3><a id="7proxy_buffers_43"></a>7、proxy_buffers</h3>
+<pre><code>proxy_buffers参数用于设置内存缓冲区的数量和大小，用于缓冲反向代理的响应内容。通过适当调整这些值，可以提高反向代理的性能和并发能力。
+</code></pre>
+<h3><a id="8gzip_48"></a>8、gzip</h3>
+<pre><code>gzip参数用于启用或禁用Gzip压缩。启用Gzip压缩可以减少传输的数据量，提高访问速度，特别是在带宽受限的情况下。
+</code></pre>
+</div>
+</body>
+
+</html>

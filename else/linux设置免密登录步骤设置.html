@@ -1,0 +1,26 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>linux设置免密登录步骤设置</title>
+  <link rel="stylesheet" href="https://stackedit.io/style.css" />
+</head>
+
+<body class="stackedit">
+  <div class="stackedit__html"><pre><code class="prism language-linux">远程访问的Linux或者windows称为客户机，被访问的linux称为目标机
+
+
+1.在客户机执行命令：ssh 用户@目标机IP，依次输入y、密码后登录目标机，然后执行exit退出目标机 
+
+
+2.在客户机中执行命令：ssh-keygen生成秘钥（公钥和私钥），然后执行命令：ssh-copy-id 目标机IP,输入目标机密码，此时客户机会把自己刚才生成的公钥发送给目标机，写在文件~/.ssh/authorized_keys中。
+
+
+3.这时候执行命令：ssh 用户@目标机IP,就可以直接登录目标机了，不需要再输入密码（免密登录）
+</code></pre>
+</div>
+</body>
+
+</html>

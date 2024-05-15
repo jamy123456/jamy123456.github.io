@@ -1,0 +1,60 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>docker启动容器实例</title>
+  <link rel="stylesheet" href="https://stackedit.io/style.css" />
+</head>
+
+<body class="stackedit">
+  <div class="stackedit__html"><h3><a id="1_tomcat_0"></a>1. 启动tomcat</h3>
+<p><code>docker run -d --name mytomcat -p 80:8080 -v /root/webapps:/usr/local/tomcat/webapps --restart always tomcat:8.5</code></p>
+<h3><a id="2_mysqlmariadb_4"></a>2. 启动mysql容器或是mariadb容器</h3>
+<p><code>docker run -d --name mysql -p 3306:3306 -e MYSQL_ROOT_PASSWORD=root mysql:5.7</code></p>
+<p><code>docker run -d --name mariadb -p 3306:3306 -e MYSQL_ROOT_PASSWORD=root mariadb:10.2</code></p>
+<h3><a id="3_redis_9"></a>3. 启动redis容器</h3>
+<p><code>docker run -d --name redis -p 6379:6379  redis:5.0</code></p>
+<p><code>docker run -d --name redis -p 6379:6379  redis:5.0  redis-server --appendonly yes</code></p>
+<h3><a id="4_gitlab_16"></a>4. 启动gitlab容器</h3>
+<pre><code>sudo docker run --detach \
+  --hostname gitlab.example.com \
+  --publish 443:443 --publish 80:80 --publish 22:22 \
+  --name gitlab \
+  --restart always \
+  --volume  $HOME/gitlab/config:/etc/gitlab \
+  --volume  $HOME/gitlab/logs:/var/log/gitlab \
+  --volume  $HOME/gitlab/data:/var/opt/gitlab \
+  gitlab/gitlab-ce:latest
+</code></pre>
+<h3><a id="5_docker_28"></a>5. 启动docker容器管理图形化界面</h3>
+<p><code>docker run -d -p 9000:9000 --restart=always -v /var/run/docker.sock:/var/run/docker.sock --name portainer 62771b0b9b09</code></p>
+<p><code>docker run -it -d --name dockerui -p 9000:9000 -v /var/run/docker.sock:/var/run/docker.sock docker.io/uifd/ui-for-docker</code></p>
+<h3><a id="6_nginx_38"></a>6. 启动nginx容器</h3>
+<pre><code>docker run -d --name nginx --restart=always -p 80:80 --privileged=true  
+-v /cloud/nginx/webroot:/usr/share/nginx/html 
+-v /cloud/nginx/config/nginx.conf:/etc/nginx/nginx.conf:ro 
+-v /cloud/nginx/config/conf.d:/etc/nginx/conf.d 
+-v /cloud/nginx/log:/var/log/nginx 
+nginx
+</code></pre>
+<h3><a id="7_mongo_49"></a>7. 启动mongo容器</h3>
+<pre><code>docker run --name mongo -p 27017:27017 -v ~/db:/data/db -d mongo:latest
+</code></pre>
+<h3><a id="8_nacos_54"></a>8. 启动nacos容器</h3>
+<pre><code>docker run -d --name mynacos -p 8858:8848 -e MODE=standalone  docker.io/tanyi/nacos-server
+</code></pre>
+<h3><a id="9_consul_59"></a>9. 启动consul容器</h3>
+<pre><code>docker run -d --name consul -p 8500:8500 consul
+</code></pre>
+<h3><a id="10_zookeeper_64"></a>10. 启动zookeeper容器</h3>
+<pre><code>docker run --name zookeeper3.4.9 -p 2181:2181 --restart always -d zookeeper:3.4.9
+
+启动zk的客户端
+docker exec -it 容器id zkCli.sh
+</code></pre>
+</div>
+</body>
+
+</html>

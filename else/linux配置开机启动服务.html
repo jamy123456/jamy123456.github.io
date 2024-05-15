@@ -1,0 +1,127 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>linux配置开机启动服务</title>
+  <link rel="stylesheet" href="https://stackedit.io/style.css" />
+</head>
+
+<body class="stackedit">
+  <div class="stackedit__html"><h3><a id="postgresql_0"></a>配置postgresql服务开机启动</h3>
+<pre><code>PostgreSQL的开机自启动脚本位于PostgreSQL源码目录的contrib/start-scripts路径下
+cd  /usr/local/src/postgresql-14.5/contrib/start-scripts 
+
+修改linux文件属性，添加X属性
+chmod u+x linux
+chmod o+x linux
+
+复制linux文件到/etc/init.d目录下，更名为postgresql 
+cp linux /etc/init.d/postgresql
+
+这里需要查看下postgresql启动脚本里里面的安装目录和数据存放目录，因为我是根据官网推荐目录安装，所以不用修改
+/usr/local/pgsql
+/usr/local/pgsql/data
+
+设置postgresql服务开机自启动   
+chkconfig --add postgresql
+
+执行上面的命令，就可以实现postgresql服务的开机自启动,重启服务器看看
+systemctl status postgresql
+</code></pre>
+<h3><a id="mysql_25"></a>配置mysql服务开机启动</h3>
+<pre><code>cd  /etc/systemd/system/
+vim mysql.service
+添加如下内容
+
+[Unit]
+Description=MySQL Server
+Documentation=man:mysqld(8)
+Documentation=http://dev.mysql.com/doc/refman/en/using-systemd.html
+After=network.target
+After=syslog.target
+
+[Install]
+WantedBy=multi-user.target
+
+[Service]
+User=mysql
+Group=users
+ExecStart=/usr/local/mysql/bin/mysqld --defaults-file=/etc/my.cnf
+LimitNOFILE= 5000
+
+然后修改mysql.service权限
+chmod  755 mysql.service
+
+最后启用开机启动
+systemctl daemon-reload
+systemctl start mysql
+systemctl enable mysql
+
+重启看看
+init 6或者是reboot
+</code></pre>
+<h3><a id="nginx_60"></a>配置nginx开机启动</h3>
+<pre><code>（1）vim /usr/lib/systemd/system/nginx.service
+
+#nginx.service内容
+[Unit]
+Description=nginx - high performance web server
+Documentation=http://nginx.org/en/docs
+After=network.target remote-fs.target nss-lookup.target
+
+[Service]
+Type=forking
+PIDFile=/usr/local/nginx/logs/nginx.pid
+ExecStartPre=/usr/local/nginx/sbin/nginx -t -c /usr/local/nginx/conf/nginx.conf
+ExecStart=/usr/local/nginx/sbin/nginx -c /usr/local/nginx/conf/nginx.conf
+ExecReload=/bin/kill -s HUP $MAINPID
+ExecStop=/bin/kill -s QUIT $MAINPID
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target
+
+（2）赋予脚本执行权限
+chmod +x /usr/lib/systemd/system/nginx.service
+
+（3）设置nginx.service为系统服务
+systemctl enable nginx.service
+
+（4）通过系统服务操作nginx
+systemctl start nginx.service
+systemctl reload nginx.service
+systemctl restart nginx.service
+systemctl stop nginx.service
+</code></pre>
+<h3><a id="Lighttpd_96"></a>配置Lighttpd开机启动</h3>
+<pre><code>（1）vim /etc/systemd/system/lighttpd.service
+[Unit]
+Description=Lighttpd Daemon
+After=network-online.target
+
+[Service]
+User=root
+Group=root
+Type=simple
+PIDFile=/run/lighttpd.pid
+ExecStartPre=/usr/local/sbin/lighttpd -tt -f /etc/lighttpd/lighttpd.conf
+ExecStart=/usr/local/sbin/lighttpd -D -f /etc/lighttpd/lighttpd.conf
+ExecReload=/bin/kill -USR1 $MAINPID
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
+
+(2) systemctl daemon-reload
+
+(3) systemctl start lighttpd
+
+
+</code></pre>
+<p><em>注意：如果启动失败可以使用journalctl  -xe查看服务启动失败日志，排查原因</em></p>
+</div>
+</body>
+
+</html>

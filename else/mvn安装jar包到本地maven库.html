@@ -1,0 +1,25 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>mvn安装jar包到本地maven库</title>
+  <link rel="stylesheet" href="https://stackedit.io/style.css" />
+</head>
+
+<body class="stackedit">
+  <div class="stackedit__html"><p><strong>mvn安装jar包到本地maven库</strong></p>
+<pre><code>安装db2驱动jar包
+
+db2jcc
+mvn install:install-file "-DgroupId=com.ibm.db2" "-DartifactId=db2jcc" "-Dversion=8.1" "-Dpackaging=jar" "-Dfile=db2jcc.jar"
+db2jcc4
+mvn install:install-file "-DgroupId=com.ibm.db2.jcc" "-DartifactId=db2jcc4" "-Dversion=10.1" "-Dpackaging=jar" "-Dfile=db2jcc4.jar"
+db2jcc_license_cu
+mvn install:install-file "-DgroupId=com.ibm.db2" "-DartifactId=db2jcc_license_cu" "-Dversion=9.7" "-Dpackaging=jar" "-Dfile=db2jcc_license_cu.jar"
+</code></pre>
+</div>
+</body>
+
+</html>

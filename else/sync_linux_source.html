@@ -1,0 +1,103 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>同步国内Linux镜像源</title>
+  <link rel="stylesheet" href="https://stackedit.io/style.css" />
+</head>
+
+<body class="stackedit">
+  <div class="stackedit__html"><p>1、首先需要安装rsync reposync</p>
+<pre><code>yum install yum-utils rsync createrepo mkisofs  -y
+</code></pre>
+<p>2、编辑同步repo文件</p>
+<pre><code>vim /etc/yum.repos.d/online.repo
+添加如下内容：
+[base]
+name=base
+baseurl=http://mirrors.ustc.edu.cn/centos/7.9.2009/os/x86_64/
+enabled=1
+gpgcheck=0
+
+[extras]
+name=extras
+baseurl=http://mirrors.ustc.edu.cn/centos/7.9.2009/extras/x86_64/
+enabled=1
+gpgcheck=0
+
+[updates]
+name=updates
+baseurl=http://mirrors.ustc.edu.cn/centos/7.9.2009/updates/x86_64/
+enabled=1
+gpgcheck=0
+
+[epel]
+name=epel
+baseurl=http://mirrors.ustc.edu.cn/epel/7/x86_64/
+enabled=1
+gpgcheck=0
+</code></pre>
+<p>3、同步镜像</p>
+<pre><code>centos7
+reposync -r  base  -n -p   /opt/repo/centos/
+reposync -r  extras  -n -p   /opt/repo/centos/
+reposync -r  updates  -n -p   /opt/repo/centos/
+reposync -r  epel  -n -p  /opt/repo/
+
+centos8
+reposync --repoid=Base  -n  --download-metadata  --download-path=/data/iso  
+reposync --repoid=AppStream -n  --download-metadata --download-path=/data/iso
+reposync --repoid=extras  -n  --download-metadata --download-path=/data/iso
+reposync --repoid=devel  -n  --download-metadata --download-path=/data/iso
+reposync --repoid=plus  -n  --download-metadata  --download-path=/data/iso
+reposync --repoid=epel  -n  --download-metadata  --download-path=/data/iso
+
+</code></pre>
+<p>4、给同步镜像源文件在本地登记造册</p>
+<pre><code>cd  /opt/repo/centos/base/  &amp;&amp; createrepo ./
+cd  /opt/repo/centos/extras/  &amp;&amp; createrepo ./
+cd  /opt/repo/centos/updates/  &amp;&amp;  createrepo ./
+cd  /opt/repo/epel/  &amp;&amp;  createrepo ./
+</code></pre>
+<p>5、配置本地repo文件</p>
+<pre><code>vim  /etc/yum.repos.d/local.repo
+添加如下内容:
+[base]
+name=base
+baseurl=file:///opt/repo/centos/base
+enabled=1
+gpgcheck=0
+
+[extras]
+name=extras
+baseurl=file:///opt/repo/centos/extras
+enabled=1
+gpgcheck=0
+
+[updates]
+name=updates
+baseurl=file:///opt/repo/centos/updates
+enabled=1
+gpgcheck=0
+
+[epel]
+name=epel
+baseurl=file:///opt/repo/epel
+enabled=1
+gpgcheck=0
+</code></pre>
+<p>6、打包镜像源iso</p>
+<pre><code>mkisofs  -r -o  centos.iso  /opt/repo/
+</code></pre>
+<p>检测当前目录下文件数量</p>
+<pre><code>ls -l | grep "^-" | wc -l
+</code></pre>
+<p>检测当前目录大小</p>
+<pre><code>du -sh  /opt
+</code></pre>
+</div>
+</body>
+
+</html>

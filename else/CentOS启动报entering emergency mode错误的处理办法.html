@@ -1,0 +1,35 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CentOS启动报entering emergency mode错误的处理办法</title>
+  <link rel="stylesheet" href="https://stackedit.io/style.css" />
+</head>
+
+<body class="stackedit">
+  <div class="stackedit__html"><p>今天宿主机意外断电关机，开机启动系统正常，打开vmware里的几个系统，发现启动centos的时候报错，内容大致如下：</p>
+<pre><code>Generating "/run/initramfs/rdsosreport.txt"
+Entering emergenc mode.Exit the shell to continue.
+Type "journalctl" to view system logs.
+You might want to save "/run/initramfs/rdsosreport.txt" to a USB stick or /boot
+after mounting them and attach it to a bug report.
+</code></pre>
+<p>解决办法：</p>
+<pre><code>重启了几次一直都无法解决。
+
+解决办法
+
+只需要在这里的shell键入一条命令：
+
+xfs_repair -v -L /dev/dm-0
+
+执行完成后即可重启，恢复正常。
+
+如果输入xfs_repair -v -L /dev/dm-0 ，报 no such file or directionary 的错误，是没有这个设备。 输入journalctl，翻到最后一页，查看红色地方XFS（）是什么。 例如如果是XFS(3)，那么就将命令对应的文件改为 xfs_repair -v -L /dev/sda3 即可。
+</code></pre>
+</div>
+</body>
+
+</html>

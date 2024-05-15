@@ -1,0 +1,292 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LVM磁盘工具使用</title>
+  <link rel="stylesheet" href="https://stackedit.io/style.css" />
+</head>
+
+<body class="stackedit">
+  <div class="stackedit__html"><h3><a id="_0"></a>物理卷相关命令</h3>
+<pre><code class="prism language-linux">创建物理卷
+pvcreate 
+例如： pvcreate  /dev/sdb1
+
+查询物理卷（简单查询）
+pvs
+
+扫描物理卷（统计）
+pvscan
+
+查询物理卷（详细查询）
+pvdisplay
+
+示例：
+[root@localhost ~]# fdisk -l
+Disk /dev/sda: 107.4 GB, 107374182400 bytes, 209715200 sectors
+Units = sectors of 1 * 512 = 512 bytes
+Sector size (logical/physical): 512 bytes / 512 bytes
+I/O size (minimum/optimal): 512 bytes / 512 bytes
+Disk label type: dos
+Disk identifier: 0x000afddb
+
+   Device Boot      Start         End      Blocks   Id  System
+/dev/sda1   *        2048     2099199     1048576   83  Linux
+/dev/sda2         2099200   209715199   103808000   8e  Linux LVM
+
+Disk /dev/sdb: 107.4 GB, 107374182400 bytes, 209715200 sectors
+Units = sectors of 1 * 512 = 512 bytes
+Sector size (logical/physical): 512 bytes / 512 bytes
+I/O size (minimum/optimal): 512 bytes / 512 bytes
+Disk label type: dos
+Disk identifier: 0x32d443be
+
+   Device Boot      Start         End      Blocks   Id  System
+/dev/sdb1            2048    62916607    31457280   8e  Linux LVM
+
+Disk /dev/mapper/centos-root: 53.7 GB, 53687091200 bytes, 104857600 sectors
+Units = sectors of 1 * 512 = 512 bytes
+Sector size (logical/physical): 512 bytes / 512 bytes
+I/O size (minimum/optimal): 512 bytes / 512 bytes
+
+
+Disk /dev/mapper/centos-swap: 4160 MB, 4160749568 bytes, 8126464 sectors
+Units = sectors of 1 * 512 = 512 bytes
+Sector size (logical/physical): 512 bytes / 512 bytes
+I/O size (minimum/optimal): 512 bytes / 512 bytes
+
+
+Disk /dev/mapper/centos-home: 48.4 GB, 48444211200 bytes, 94617600 sectors
+Units = sectors of 1 * 512 = 512 bytes
+Sector size (logical/physical): 512 bytes / 512 bytes
+I/O size (minimum/optimal): 512 bytes / 512 bytes
+
+[root@localhost ~]# pvcreate /dev/sdb1
+  Physical volume "/dev/sdb1" successfully created.
+[root@localhost ~]# pvs
+  PV         VG     Fmt  Attr PSize   PFree
+  /dev/sda2  centos lvm2 a--  &lt;99.00g  4.00m
+  /dev/sdb1         lvm2 ---   30.00g 30.00g
+[root@localhost ~]# pvdisplay
+  --- Physical volume ---
+  PV Name               /dev/sda2
+  VG Name               centos
+  PV Size               &lt;99.00 GiB / not usable 3.00 MiB
+  Allocatable           yes
+  PE Size               4.00 MiB
+  Total PE              25343
+  Free PE               1
+  Allocated PE          25342
+  PV UUID               eG0BC5-PoCg-74WT-ly8u-D3p8-5v2z-BUDYxC
+
+  "/dev/sdb1" is a new physical volume of "30.00 GiB"
+  --- NEW Physical volume ---
+  PV Name               /dev/sdb1
+  VG Name
+  PV Size               30.00 GiB
+  Allocatable           NO
+  PE Size               0
+  Total PE              0
+  Free PE               0
+  Allocated PE          0
+  PV UUID               u67jbd-MEpL-RfGq-dq9d-Amia-OBT1-5y7YqO
+  [root@localhost ~]# pvscan
+  PV /dev/sdb1   VG                 lvm2 [&lt;30.00 GiB / &lt;30.00 GiB free]
+  PV /dev/sda2   VG centos          lvm2 [&lt;99.00 GiB / 4.00 MiB free]
+  Total: 2 [128.99 GiB] / in use: 1 [128.99 GiB] / in no VG: 1 [1   ]
+
+</code></pre>
+<h3><a id="_91"></a>卷组相关命令</h3>
+<pre><code class="prism language-linux">创建卷组
+vgcreate  -s   PE大小    卷组名    物理卷
+例如：vgcreate  -s 4M  vg_test    /dev/sdb1
+-s指定PE大小
+/dev/sdb1 加入这个卷组的物理卷
+物理卷指定了卷组后才可以被分配使用
+
+查询卷组（简单查询）
+vgs
+
+查询卷组（详细查询）
+vgdisplay
+
+扫描卷组（统计）
+vgscan
+
+扩展卷组
+vgextend
+
+
+示例：
+[root@localhost ~]# vgcreate -s 4M vg_test /dev/sdb1
+  Volume group "vg_test" successfully created
+[root@localhost ~]# vgs
+  VG      #PV #LV #SN Attr   VSize   VFree
+  centos    1   3   0 wz--n- &lt;99.00g   4.00m
+  vg_test   1   0   0 wz--n- &lt;30.00g &lt;30.00g
+[root@localhost ~]# vgdisplay
+  --- Volume group ---
+  VG Name               vg_test
+  System ID
+  Format                lvm2
+  Metadata Areas        1
+  Metadata Sequence No  1
+  VG Access             read/write
+  VG Status             resizable
+  MAX LV                0
+  Cur LV                0
+  Open LV               0
+  Max PV                0
+  Cur PV                1
+  Act PV                1
+  VG Size               &lt;30.00 GiB
+  PE Size               4.00 MiB
+  Total PE              7679
+  Alloc PE / Size       0 / 0
+  Free  PE / Size       7679 / &lt;30.00 GiB
+  VG UUID               wy3lDO-oPzE-4E0w-X7gP-yxo7-bP1g-tTrx0p
+
+  --- Volume group ---
+  VG Name               centos
+  System ID
+  Format                lvm2
+  Metadata Areas        1
+  Metadata Sequence No  4
+  VG Access             read/write
+  VG Status             resizable
+  MAX LV                0
+  Cur LV                3
+  Open LV               3
+  Max PV                0
+  Cur PV                1
+  Act PV                1
+  VG Size               &lt;99.00 GiB
+  PE Size               4.00 MiB
+  Total PE              25343
+  Alloc PE / Size       25342 / 98.99 GiB
+  Free  PE / Size       1 / 4.00 MiB
+  VG UUID               u25lQu-Y8c3-MksK-vv41-hAak-U61R-oAYaYJ
+[root@localhost ~]# vgscan
+  Reading volume groups from cache.
+  Found volume group "vg_test" using metadata type lvm2
+  Found volume group "centos" using metadata type lvm2
+
+</code></pre>
+<h3><a id="_169"></a>逻辑卷相关命令</h3>
+<pre><code class="prism language-linux">创建逻辑卷
+lvcreate -L 200M -n  逻辑卷名字  卷组名
+-L给逻辑卷分配大小
+-l  分配指定大小的PE给LV
+-n 给逻辑卷命名
+卷组名  从指定卷组分配
+例如：lvcreate -L 1G  test1   vg_test  
+注意：
+1、必须从卷组创建逻辑卷
+2、针对逻辑卷要格式化
+
+格式化逻辑卷
+mkfs -t xfs  /dev/vg_test/test1
+或者写成这样也可以
+mkfs -t xfs /dev/mapper/vg_test-test1
+
+挂载逻辑卷
+mkdir data1
+临时挂载
+mount  /dev/vg_test/test1  /data1
+永久挂载
+编辑/etc/fstab，添加如下内容后保存
+/dev/vg_test/test1  /data1   xfs   defaults   0   0
+
+查询逻辑卷（简单查询）
+lvs
+
+查询逻辑卷（详细查询）
+lvdisplay
+
+扩展逻辑卷
+lvextend 
+
+
+示例：
+[root@localhost ~]# lvcreate -L 1G -n  test1  vg_test     #创建逻辑卷
+  Logical volume "test1" created.
+[root@localhost ~]# lvs    #简单查询逻辑卷
+  LV    VG      Attr       LSize   Pool Origin Data%  Meta%  Move Log Cpy%Sync Convert
+  home  centos  -wi-ao---- &lt;45.12g
+  root  centos  -wi-ao----  50.00g
+  swap  centos  -wi-ao----  &lt;3.88g
+  test1 vg_test -wi-a-----   1.00g
+[root@localhost ~]# lvdisplay   #详细查询逻辑卷
+  --- Logical volume ---
+  LV Path                /dev/vg_test/test1
+  LV Name                test1
+  VG Name                vg_test
+  LV UUID                4COYyV-1LK6-LcmT-NAwe-r5YS-3AGE-Ju7mUx
+  LV Write Access        read/write
+  LV Creation host, time localhost, 2023-06-13 22:14:15 +0800
+  LV Status              available
+  # open                 0
+  LV Size                1.00 GiB
+  Current LE             256
+  Segments               1
+  Allocation             inherit
+  Read ahead sectors     auto
+  - currently set to     8192
+  Block device           253:3
+[root@localhost ~]# lvscan   #统计查询逻辑卷
+  ACTIVE            '/dev/vg_test/test1' [1.00 GiB] inherit
+  ACTIVE            '/dev/centos/swap' [&lt;3.88 GiB] inherit
+  ACTIVE            '/dev/centos/home' [&lt;45.12 GiB] inherit
+  ACTIVE            '/dev/centos/root' [50.00 GiB] inherit
+  [root@localhost ~]# lvdisplay
+  --- Logical volume ---
+  LV Path                /dev/vg_test/test1
+  LV Name                test1
+  VG Name                vg_test
+  LV UUID                4COYyV-1LK6-LcmT-NAwe-r5YS-3AGE-Ju7mUx
+  LV Write Access        read/write
+  LV Creation host, time localhost, 2023-06-13 22:14:15 +0800
+  LV Status              available
+  # open                 0
+  LV Size                1.00 GiB
+  Current LE             256
+  Segments               1
+  Allocation             inherit
+  Read ahead sectors     auto
+  - currently set to     8192
+  Block device           253:3
+  [root@localhost ~]# ls -la /dev/vg_test/test1
+lrwxrwxrwx 1 root root 7 Jun 13 22:14 /dev/vg_test/test1 -&gt; ../dm-3
+[root@localhost ~]# mkfs -t xfs  /dev/vg_test/test1    #格式化逻辑卷
+meta-data=/dev/vg_test/test1     isize=512    agcount=4, agsize=65536 blks
+         =                       sectsz=512   attr=2, projid32bit=1
+         =                       crc=1        finobt=0, sparse=0
+data     =                       bsize=4096   blocks=262144, imaxpct=25
+         =                       sunit=0      swidth=0 blks
+naming   =version 2              bsize=4096   ascii-ci=0 ftype=1
+log      =internal log           bsize=4096   blocks=2560, version=2
+         =                       sectsz=512   sunit=0 blks, lazy-count=1
+realtime =none                   extsz=4096   blocks=0, rtextents=0
+[root@localhost /]# mount /dev/vg_test/test1 /data1    #挂载逻辑卷
+[root@localhost /]# df -h     #查看挂载的情况
+Filesystem                 Size  Used Avail Use% Mounted on
+/dev/mapper/centos-root     50G  1.2G   49G   3% /
+devtmpfs                   4.8G     0  4.8G   0% /dev
+tmpfs                      4.8G     0  4.8G   0% /dev/shm
+tmpfs                      4.8G   12M  4.8G   1% /run
+tmpfs                      4.8G     0  4.8G   0% /sys/fs/cgroup
+/dev/sda1                 1014M  146M  869M  15% /boot
+/dev/mapper/centos-home     46G  439M   45G   1% /home
+tmpfs                      982M     0  982M   0% /run/user/0
+/dev/mapper/vg_test-test1 1014M   33M  982M   4% /data1
+注意：
+/dev/卷组名/逻辑卷名   =  /dev/mapper/卷组名-逻辑卷名   =   /dev/dm-n
+/dev/vg_test/test1   =     /dev/mapper/vg_test-test1    =   /dev/dm-3
+这三个是等价的
+</code></pre>
+</div>
+</body>
+
+</html>

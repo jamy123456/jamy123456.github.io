@@ -1,0 +1,112 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>linux下redis安装</title>
+  <link rel="stylesheet" href="https://stackedit.io/style.css" />
+</head>
+
+<body class="stackedit">
+  <div class="stackedit__html"><pre><code>1、下载redis压缩包并上传到/usr/local目录下
+下载连接：http://download.redis.io/releases/
+
+2、解压redis压缩包并修改文件夹名称
+cd /usr/local/
+tar -zxvf  redis-7.0.0.tar.gz
+mv redis-7.0.0 redis7
+
+3、如果没有安装C语言和make，那么执行下面命令安装下（如果已经安装跳过这一步）
+yum install -y gcc*
+yum install -y make*
+
+4、编译并安装redis
+cd /usr/local/redis7
+make &amp;&amp; make install
+
+5、设置redis开机启动
+cd /etc/systemd/system
+vim redis.service 添加如下内容
+
+-----------------------------------------------------------------------------------------------
+[Unit]
+Description=redis-server
+After=network.target
+[Service]
+Type=forking
+# 这行配置内容要根据redis的安装目录自定义路径
+ExecStart=/usr/local/redis7/src/redis-server /usr/local/redis7/redis.conf
+PrivateTmp=true
+[Install]
+WantedBy=multi-user.target
+------------------------------------------------------------------------------------------------
+
+6、重新加载开机服务文件
+systemctl daemon-reload
+
+7、修改redis.conf配置文件的309行
+cd /usr/local/redis7/
+vim redis.conf
+把daemonize no 修改成 daemonize yes
+
+8、设置环境变量并生效
+echo 'export PATH=$PATH:/usr/local/redis7/src' &gt;&gt; /etc/profile
+source /etc/profile
+
+9、设置开机启动redis服务
+systemctl enable redis
+
+10、查看redis服务状态
+systemctl status redis
+
+11、手动启动redis服务
+systemctl start redis
+
+12、手动停止redis服务
+systemctl stop redis
+</code></pre>
+<p>手动启动和关停redis</p>
+<pre><code>启动
+redis-server 配置文件路径
+停止
+redis-cli shutdown
+</code></pre>
+<p>redis启动脚本<br>
+vim  redis</p>
+<pre><code>#!/bin/bash
+param=$1
+if [ -z $param ]
+    then echo "invalid param";
+    exit;
+fi
+
+if [ "start" == $param ]
+    then redis-server /opt/redis7/redis.conf
+  elif [ "restart" == $param ]
+    then redis-cli shutdown
+    redis-server /opt/redis7/redis.conf;
+  elif [ "stop" == $param ]
+    then redis-cli shutdown;
+fi
+</code></pre>
+<p>编辑保存redis文件，并将redis文件放入redis的src(/opt/redis7/src)目录下<br>
+给redis文件赋予可执行权限<br>
+chmod  755  redis<br>
+将src配置到Linux的PATH路径下<br>
+echo ‘export  PATH=$PATH:/opt/redis7/src’ &gt;&gt; /etc/profile<br>
+source  /etc/profile</p>
+<p>执行命令</p>
+<pre><code>启动
+redis start
+
+停止
+redis stop
+
+重启
+redis restart
+</code></pre>
+</div>
+</body>
+
+</html>

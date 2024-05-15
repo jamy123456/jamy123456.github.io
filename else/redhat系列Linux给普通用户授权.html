@@ -1,0 +1,46 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>redhat系列Linux给普通用户授权</title>
+  <link rel="stylesheet" href="https://stackedit.io/style.css" />
+</head>
+
+<body class="stackedit">
+  <div class="stackedit__html"><h3><a id="1__0"></a>1. 创建普通用户</h3>
+<pre><code>创建用户
+useradd  jamy
+给用户设定密码，生产上不建议这样设置密码，有安全问题
+echo "jamy" | passwd --stdin jamy
+</code></pre>
+<h3><a id="2__7"></a>2. 授予管理员权限</h3>
+<p>编辑sudoers文件，这里需要使用root用户通过visudo命令来编辑，并不是通过vim /etc/sudoers命令直接编辑的(有风险)</p>
+<p>（1）第一种方式</p>
+<pre><code>编辑sudoers文件
+visudo 
+在sudoers文件的root    ALL=(ALL)       ALL  这一行下面添加如下内容，保存更改后，重新使用jamy用户登录就可以使用管理员权限了，不过要在执行命令前面加上sudo即可
+jamy    ALL=(ALL)       ALL
+</code></pre>
+<em><strong>如果是SUSE linux系统</strong></em>，需要把Defaults targetpw和ALL  ALL=(ALL) ALL这两行注释掉，然后在root  ALL=(ALL:ALL) ALL这一行下面加上你的用户，例如我这里加的是appuser  ALL=(ALL:ALL) ALL</p>
+<p>（2）第二种方式</p>
+<pre><code>先将jamy用户的所属组改成wheel
+usermod  -g  wheel  jamy
+然后编辑sudoers文件
+visudo 
+将sudoers文件的%wheel  ALL=(ALL)       ALL这一行前面的#号去掉，保存更改后，重新使用jamy用户登录就可以使用管理员权限了，不过要在执行命令前面加上sudo即可，第一次使用管理员的权限需要输入用户自己的密码，第二次就不用再次输入密码，但是重新登录后第一次还是一样
+注意：如果是SUSE linux系统，需要把Defaults targetpw和ALL  ALL=(ALL) ALL这两行注释掉。
+</code></pre>
+检测下权限<br>
+（3）第三种方式</p>
+<pre><code>先将jamy用户的所属组改成wheel(这个和第二种方式一样)
+usermod  -g  wheel  jamy
+然后编辑sudoers文件
+visudo 
+将sudoers文件的%wheel  ALL=(ALL)       NOPASSWD: ALL这一行前面的#号去掉，并且将%wheel ALL=(ALL)       ALL这一行注释掉，保存更改后，重新使用jamy用户登录就可以使用管理员权限了，不过要在执行命令前面加上sudo即可，并且使用管理员权限不需要输入任何密码
+</code></pre>
+</div>
+</body>
+
+</html>
