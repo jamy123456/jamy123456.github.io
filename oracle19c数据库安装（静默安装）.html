@@ -1,0 +1,314 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>oracle19c数据库安装（静默安装）</title>
+  <link rel="stylesheet" href="https://stackedit.io/style.css" />
+</head>
+
+<body class="stackedit">
+  <div class="stackedit__left">
+    <div class="stackedit__toc">
+      
+<ul>
+<li>
+<ul>
+<li></li>
+</ul>
+</li>
+</ul>
+
+    </div>
+  </div>
+  <div class="stackedit__right">
+    <div class="stackedit__html">
+      <p></p><div class="toc"><h3>目录</h3><ul><ul><ul><li><a href="#_1">前言</a></li><li><a href="#1__4">1. 安装前准备工作</a></li><li><a href="#2__167">2. 安装数据库</a></li><li><a href="#3__194">3. 配置监听</a></li><li><a href="#4__203">4. 创建数据库</a></li></ul></ul></ul></div><p></p>
+<h3><a id="_1"></a>前言</h3>
+<p>oracle19c数据库安装相对于<a href="https://blog.csdn.net/u010080562/article/details/122610433?spm=1001.2014.3001.5501">oracle12c安装</a>还是有些不一样的，所以今天再来记录一下安装过程，本次安装仍然是基于Oracle linux7.6环境来安装，仅供参考</p>
+<h3><a id="1__4"></a>1. 安装前准备工作</h3>
+<p>（1）关闭防火墙</p>
+<pre><code class="prism language-handlebars"><span class="token variable">systemctl</span> <span class="token variable">stop</span>  <span class="token variable">firewalld</span>
+<span class="token variable">systemctl</span> <span class="token variable">disable</span> <span class="token variable">firewalld</span>
+</code></pre>
+<p><img src="https://i-blog.csdnimg.cn/blog_migrate/747a5f2d37b01ed76978f1031dfa9cd8.png" alt="在这里插入图片描述"></p>
+<p>（2）禁用SElinux<br>
+执行vim /etc/selinux/config修改编辑config文件,将SELINUX设置成disabled，如下所示<br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/6b007a3e6d996cf1470292409ce91b3c.png" alt="在这里插入图片描述"><br>
+（3）编辑hosts和hostname文件</p>
+<pre><code class="prism language-handlebars"><span class="token variable">执行vim</span>  <span class="token punctuation">/</span><span class="token variable">etc</span><span class="token punctuation">/</span><span class="token variable">hostname</span><span class="token punctuation">,</span><span class="token variable">添加如下内容</span>
+<span class="token variable">jamysong</span>
+<span class="token variable">执行vim</span>  <span class="token punctuation">/</span><span class="token variable">etc</span><span class="token punctuation">/</span><span class="token variable">hosts，添加如下内容，这里</span><span class="token number">192.168</span><span class="token number">.227</span><span class="token number">.75</span><span class="token variable">地址可以通过执行ifconfig查询到</span>
+<span class="token number">192.168</span><span class="token number">.227</span><span class="token number">.75</span>   <span class="token variable">jamysong</span>      
+<span class="token variable">然后执行init</span> <span class="token number">6</span><span class="token variable">重启后，可以看到修改已经生效</span>
+</code></pre>
+<p><img src="https://i-blog.csdnimg.cn/blog_migrate/58418b903f19cd7a9a8712e53b1ba247.png" alt="在这里插入图片描述"><br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/97bba4e757aeaf03cd82faa8dcb5b1f8.png" alt="在这里插入图片描述"><br>
+然后执行init 6重启oracle linux，可以看到如下所示<br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/3287895040330f207130609d2dbb9b67.png" alt="在这里插入图片描述"><br>
+（4）禁用透明 HugePages<br>
+vim /etc/default/grub，在GRUB_CMDLINE_LINUX参数的末尾添加transparent_hugepage=never。编辑如下所示<br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/6f3dbbbe2b2a28fa7cf5d237ba67c9a7.png" alt="在这里插入图片描述"><br>
+使用修改后的配置生成/boot/grub2/grub.cfg文件，执行grub2-mkconfig -o /boot/grub2/grub.cfg<br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/f14e627fa82af5dd9010bb5f39a4f470.png" alt="在这里插入图片描述"><br>
+执行init 6重启 oracle linux以使更改生效</p>
+<p>执行cat /sys/kernel/mm/transparent_hugepage/enabled查看，如下图所示说明已经禁用HugePages<br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/05c97e23210dcc20a22fe5b907b9180e.png" alt="在这里插入图片描述"><br>
+（5）安装依赖包</p>
+<pre><code class="prism language-handlebars"><span class="token variable">yum</span> <span class="token variable">install</span> <span class="token variable">-y</span> <span class="token punctuation">\</span>
+  <span class="token variable">bc</span> <span class="token punctuation">\</span>
+  <span class="token variable">binutils</span> <span class="token punctuation">\</span>
+  <span class="token variable">compat-libcap1</span> <span class="token punctuation">\</span>
+  <span class="token variable">compat-libstdc</span><span class="token punctuation">+</span><span class="token punctuation">+</span><span class="token variable">-</span><span class="token number">33</span> <span class="token punctuation">\</span>
+  <span class="token variable">elfutils-libelf</span> <span class="token punctuation">\</span>
+  <span class="token variable">elfutils-libelf-devel</span> <span class="token punctuation">\</span>
+  <span class="token variable">fontconfig-devel</span> <span class="token punctuation">\</span>
+  <span class="token variable">glibc</span> <span class="token punctuation">\</span>
+  <span class="token variable">glibc-devel</span> <span class="token punctuation">\</span>
+  <span class="token variable">ksh</span> <span class="token punctuation">\</span>
+  <span class="token variable">libaio</span> <span class="token punctuation">\</span>
+  <span class="token variable">libaio-devel</span> <span class="token punctuation">\</span>
+  <span class="token variable">libX11</span> <span class="token punctuation">\</span>
+  <span class="token variable">libXau</span> <span class="token punctuation">\</span>
+  <span class="token variable">libXi</span> <span class="token punctuation">\</span>
+  <span class="token variable">libXtst</span> <span class="token punctuation">\</span>
+  <span class="token variable">libXrender</span> <span class="token punctuation">\</span>
+  <span class="token variable">libXrender-devel</span> <span class="token punctuation">\</span>
+  <span class="token variable">libgcc</span> <span class="token punctuation">\</span>
+  <span class="token variable">libstdc</span><span class="token punctuation">+</span><span class="token punctuation">+</span> <span class="token punctuation">\</span>
+  <span class="token variable">libstdc</span><span class="token punctuation">+</span><span class="token punctuation">+</span><span class="token variable">-devel</span> <span class="token punctuation">\</span>
+  <span class="token variable">libxcb</span> <span class="token punctuation">\</span>
+  <span class="token variable">make</span> <span class="token punctuation">\</span>
+  <span class="token variable">smartmontools</span> <span class="token punctuation">\</span>
+  <span class="token variable">sysstat</span>
+
+<span class="token variable">yum</span> <span class="token variable">install</span> <span class="token variable">-y</span> <span class="token punctuation">\</span>
+  <span class="token variable">net-tools</span> <span class="token punctuation">\</span>
+  <span class="token variable">gcc</span> <span class="token punctuation">\</span>
+  <span class="token variable">gcc-c</span><span class="token punctuation">+</span><span class="token punctuation">+</span> <span class="token punctuation">\</span>
+  <span class="token variable">gcc-info</span> <span class="token punctuation">\</span>
+  <span class="token variable">gcc-locale</span> <span class="token punctuation">\</span>
+  <span class="token variable">gcc48</span> <span class="token punctuation">\</span>
+  <span class="token variable">gcc48-info</span> <span class="token punctuation">\</span>
+  <span class="token variable">gcc48-locale</span> <span class="token punctuation">\</span>
+  <span class="token variable">gcc48-c</span><span class="token punctuation">+</span><span class="token punctuation">+</span>
+</code></pre>
+<p>（6）创建用户和用户组</p>
+<pre><code class="prism language-handlebars"><span class="token variable">groupadd</span> <span class="token variable">-g</span> <span class="token number">54321</span> <span class="token variable">oinstall</span>
+<span class="token variable">groupadd</span> <span class="token variable">-g</span> <span class="token number">54322</span> <span class="token variable">dba</span>
+<span class="token variable">groupadd</span> <span class="token variable">-g</span> <span class="token number">54323</span> <span class="token variable">oper</span>
+<span class="token variable">groupadd</span> <span class="token variable">-g</span> <span class="token number">54324</span> <span class="token variable">backupdba</span>
+<span class="token variable">groupadd</span> <span class="token variable">-g</span> <span class="token number">54325</span> <span class="token variable">dgdba</span>
+<span class="token variable">groupadd</span> <span class="token variable">-g</span> <span class="token number">54326</span> <span class="token variable">kmdba</span>
+<span class="token variable">groupadd</span> <span class="token variable">-g</span> <span class="token number">54330</span> <span class="token variable">racdba</span>
+<span class="token variable">useradd</span> <span class="token variable">-u</span> <span class="token number">54321</span> <span class="token variable">-g</span> <span class="token variable">oinstall</span> <span class="token variable">-G</span> <span class="token variable">dba</span><span class="token punctuation">,</span><span class="token variable">oper</span><span class="token punctuation">,</span><span class="token variable">backupdba</span><span class="token punctuation">,</span><span class="token variable">dgdba</span><span class="token punctuation">,</span><span class="token variable">kmdba</span><span class="token punctuation">,</span><span class="token variable">racdba</span> <span class="token variable">oracle</span>
+<span class="token variable">echo</span> <span class="token string">"oracle"</span> <span class="token punctuation">|</span> <span class="token variable">passwd</span> <span class="token variable">oracle</span> <span class="token variable">--stdin</span>
+</code></pre>
+<p>（7）为 Oracle 用户设置安全限制<br>
+执行以下命令编辑30-oracle.conf文件，设置oracle用户的安全限制</p>
+<pre><code class="prism language-handlebars"><span class="token variable">cat</span> <span class="token punctuation">&gt;</span><span class="token punctuation">/</span><span class="token variable">etc</span><span class="token punctuation">/</span><span class="token variable">security</span><span class="token punctuation">/</span><span class="token variable">limits</span><span class="token punctuation">.</span><span class="token variable">d</span><span class="token punctuation">/</span><span class="token number">30</span><span class="token variable">-oracle</span><span class="token punctuation">.</span><span class="token variable">conf</span><span class="token punctuation">&lt;</span><span class="token punctuation">&lt;</span><span class="token variable">EOF</span>
+<span class="token variable">oracle</span>   <span class="token variable">soft</span>   <span class="token variable">nofile</span>    <span class="token number">1024</span>
+<span class="token variable">oracle</span>   <span class="token variable">hard</span>   <span class="token variable">nofile</span>    <span class="token number">65536</span>
+<span class="token variable">oracle</span>   <span class="token variable">soft</span>   <span class="token variable">nproc</span>    <span class="token number">16384</span>
+<span class="token variable">oracle</span>   <span class="token variable">hard</span>   <span class="token variable">nproc</span>    <span class="token number">16384</span>
+<span class="token variable">oracle</span>   <span class="token variable">soft</span>   <span class="token variable">stack</span>    <span class="token number">10240</span>
+<span class="token variable">oracle</span>   <span class="token variable">hard</span>   <span class="token variable">stack</span>    <span class="token number">32768</span>
+<span class="token variable">oracle</span>   <span class="token variable">hard</span>   <span class="token variable">memlock</span>    <span class="token number">134217728</span>
+<span class="token variable">oracle</span>   <span class="token variable">soft</span>   <span class="token variable">memlock</span>    <span class="token number">134217728</span>
+<span class="token variable">EOF</span>
+</code></pre>
+<p>（8）修改linux内核参数<br>
+执行以下命令编辑98-oracle.conf文件</p>
+<pre><code class="prism language-handlebars"><span class="token variable">cat</span> <span class="token punctuation">&gt;</span><span class="token punctuation">/</span><span class="token variable">etc</span><span class="token punctuation">/</span><span class="token variable">sysctl</span><span class="token punctuation">.</span><span class="token variable">d</span><span class="token punctuation">/</span><span class="token number">98</span><span class="token variable">-oracle</span><span class="token punctuation">.</span><span class="token variable">conf</span><span class="token punctuation">&lt;</span><span class="token punctuation">&lt;</span><span class="token variable">EOF</span>
+<span class="token variable">fs</span><span class="token punctuation">.</span><span class="token variable">file-max</span> <span class="token punctuation">=</span> <span class="token number">6815744</span>
+<span class="token variable">kernel</span><span class="token punctuation">.</span><span class="token variable">sem</span> <span class="token punctuation">=</span> <span class="token number">250</span> <span class="token number">32000</span> <span class="token number">100</span> <span class="token number">128</span>
+<span class="token variable">kernel</span><span class="token punctuation">.</span><span class="token variable">shmmni</span> <span class="token punctuation">=</span> <span class="token number">4096</span>
+<span class="token variable">kernel</span><span class="token punctuation">.</span><span class="token variable">shmall</span> <span class="token punctuation">=</span> <span class="token number">1073741824</span>
+<span class="token variable">kernel</span><span class="token punctuation">.</span><span class="token variable">shmmax</span> <span class="token punctuation">=</span> <span class="token number">4398046511104</span>
+<span class="token variable">kernel</span><span class="token punctuation">.</span><span class="token variable">panic_on_oops</span> <span class="token punctuation">=</span> <span class="token number">1</span>
+<span class="token variable">net</span><span class="token punctuation">.</span><span class="token variable">core</span><span class="token punctuation">.</span><span class="token variable">rmem_default</span> <span class="token punctuation">=</span> <span class="token number">262144</span>
+<span class="token variable">net</span><span class="token punctuation">.</span><span class="token variable">core</span><span class="token punctuation">.</span><span class="token variable">rmem_max</span> <span class="token punctuation">=</span> <span class="token number">4194304</span>
+<span class="token variable">net</span><span class="token punctuation">.</span><span class="token variable">core</span><span class="token punctuation">.</span><span class="token variable">wmem_default</span> <span class="token punctuation">=</span> <span class="token number">262144</span>
+<span class="token variable">net</span><span class="token punctuation">.</span><span class="token variable">core</span><span class="token punctuation">.</span><span class="token variable">wmem_max</span> <span class="token punctuation">=</span> <span class="token number">1048576</span>
+<span class="token variable">net</span><span class="token punctuation">.</span><span class="token variable">ipv4</span><span class="token punctuation">.</span><span class="token variable">conf</span><span class="token punctuation">.</span><span class="token variable">all</span><span class="token punctuation">.</span><span class="token variable">rp_filter</span> <span class="token punctuation">=</span> <span class="token number">2</span>
+<span class="token variable">net</span><span class="token punctuation">.</span><span class="token variable">ipv4</span><span class="token punctuation">.</span><span class="token variable">conf</span><span class="token punctuation">.</span><span class="token variable">default</span><span class="token punctuation">.</span><span class="token variable">rp_filter</span> <span class="token punctuation">=</span> <span class="token number">2</span>
+<span class="token variable">fs</span><span class="token punctuation">.</span><span class="token variable">aio-max-nr</span> <span class="token punctuation">=</span> <span class="token number">1048576</span>
+<span class="token variable">net</span><span class="token punctuation">.</span><span class="token variable">ipv4</span><span class="token punctuation">.</span><span class="token variable">ip_local_port_range</span> <span class="token punctuation">=</span> <span class="token number">9000</span> <span class="token number">65500</span>
+<span class="token variable">EOF</span>
+</code></pre>
+<p>然后执行sysctl --system命令重新加载内核参数</p>
+<p>（9）为 Oracle Database 19c 创建目录</p>
+<pre><code class="prism language-handlebars"><span class="token variable">mkdir</span> <span class="token variable">-p</span> <span class="token punctuation">/</span><span class="token variable">u01</span><span class="token punctuation">/</span><span class="token variable">app</span><span class="token punctuation">/</span><span class="token variable">oracle</span><span class="token punctuation">/</span><span class="token variable">product</span><span class="token punctuation">/</span><span class="token number">19.3</span><span class="token number">.0</span><span class="token block keyword">/dbhome_1</span>
+<span class="token variable">mkdir</span> <span class="token variable">-p</span> <span class="token punctuation">/</span><span class="token variable">u01</span><span class="token punctuation">/</span><span class="token variable">oradata</span>
+<span class="token variable">chown</span> <span class="token variable">-R</span> <span class="token variable">oracle</span><span class="token punctuation">:</span><span class="token variable">oinstall</span> <span class="token punctuation">/</span><span class="token variable">u01</span>
+<span class="token variable">chmod</span> <span class="token variable">-R</span> <span class="token number">775</span> <span class="token block keyword">/u01</span>
+</code></pre>
+<p>（10）为 Oracle 用户配置 Linux 环境变量<br>
+执行su oracle切换到oracle用户下，然后执行vim  ~/.bash_profile命令设置环境变量</p>
+<pre><code class="prism language-handlebars"><span class="token punctuation">#</span> <span class="token variable">Oracle</span> <span class="token variable">Settings</span>
+<span class="token variable">export</span> <span class="token variable">TMP</span><span class="token punctuation">=</span><span class="token punctuation">/</span><span class="token variable">tmp</span>
+<span class="token variable">export</span> <span class="token variable">TMPDIR</span><span class="token punctuation">=</span><span class="token variable">$TMP</span>
+<span class="token variable">export</span> <span class="token variable">ORACLE_HOSTNAME</span><span class="token punctuation">=</span><span class="token variable">jamysong</span>
+<span class="token variable">export</span> <span class="token variable">ORACLE_UNQNAME</span><span class="token punctuation">=</span><span class="token variable">cdb1</span>
+<span class="token variable">export</span> <span class="token variable">ORACLE_BASE</span><span class="token punctuation">=</span><span class="token punctuation">/</span><span class="token variable">u01</span><span class="token punctuation">/</span><span class="token variable">app</span><span class="token punctuation">/</span><span class="token variable">oracle</span>
+<span class="token variable">export</span> <span class="token variable">ORACLE_HOME</span><span class="token punctuation">=</span><span class="token variable">$ORACLE_BASE</span><span class="token punctuation">/</span><span class="token variable">product</span><span class="token punctuation">/</span><span class="token number">19.3</span><span class="token number">.0</span><span class="token block keyword">/dbhome_1</span>
+<span class="token variable">export</span> <span class="token variable">ORA_INVENTORY</span><span class="token punctuation">=</span><span class="token punctuation">/</span><span class="token variable">u01</span><span class="token punctuation">/</span><span class="token variable">app</span><span class="token punctuation">/</span><span class="token variable">oraInventory</span>
+<span class="token variable">export</span> <span class="token variable">ORACLE_SID</span><span class="token punctuation">=</span><span class="token variable">orcl</span>
+<span class="token variable">export</span> <span class="token variable">PDB_NAME</span><span class="token punctuation">=</span><span class="token variable">pdb1</span>
+<span class="token variable">export</span> <span class="token variable">DATA_DIR</span><span class="token punctuation">=</span><span class="token punctuation">/</span><span class="token variable">u01</span><span class="token punctuation">/</span><span class="token variable">oradata</span>
+<span class="token variable">export</span> <span class="token variable">PATH</span><span class="token punctuation">=</span><span class="token variable">$ORACLE_HOME</span><span class="token punctuation">/</span><span class="token variable">bin</span><span class="token punctuation">:</span><span class="token variable">$PATH</span>
+<span class="token variable">export</span> <span class="token variable">LD_LIBRARY_PATH</span><span class="token punctuation">=</span><span class="token variable">$ORACLE_HOME</span><span class="token punctuation">/</span><span class="token variable">lib</span><span class="token punctuation">:</span><span class="token punctuation">/</span><span class="token variable">lib</span><span class="token punctuation">:</span><span class="token punctuation">/</span><span class="token variable">usr</span><span class="token punctuation">/</span><span class="token variable">lib</span>
+<span class="token variable">export</span> <span class="token variable">CLASSPATH</span><span class="token punctuation">=</span><span class="token variable">$ORACLE_HOME</span><span class="token punctuation">/</span><span class="token variable">jlib</span><span class="token punctuation">:</span><span class="token variable">$ORACLE_HOME</span><span class="token punctuation">/</span><span class="token variable">rdbms</span><span class="token punctuation">/</span><span class="token variable">jlib</span>
+</code></pre>
+<p>编辑完成后，执行source ~/.bash_profile，使oracle用户环境变量生效。</p>
+<p>（11）上传oracle19c二进制安装文件<br>
+将oracle19c二进制安装文件上传至/usr/local/src目录下并执行以下命令解压文件至安装目录</p>
+<pre><code class="prism language-handlebars"><span class="token variable">unzip</span> <span class="token variable">LINUX</span><span class="token punctuation">.</span><span class="token variable">X64_193000_db_home</span><span class="token punctuation">.</span><span class="token variable">zip</span> <span class="token variable">-d</span> <span class="token variable">$ORACLE_HOME</span>
+</code></pre>
+<h3><a id="2__167"></a>2. 安装数据库</h3>
+<p>在oracle用户下，执行cd $ORACLE_HOME命令切换到oracle安装目录下，然后执行数据库安装命令</p>
+<pre><code class="prism language-handlebars"><span class="token punctuation">.</span><span class="token punctuation">/</span><span class="token variable">runInstaller</span> <span class="token variable">-ignorePrereq</span> <span class="token variable">-waitforcompletion</span> <span class="token variable">-silent</span> <span class="token punctuation">\</span>
+  <span class="token variable">oracle</span><span class="token punctuation">.</span><span class="token variable">install</span><span class="token punctuation">.</span><span class="token variable">option</span><span class="token punctuation">=</span><span class="token variable">INSTALL_DB_SWONLY</span> <span class="token punctuation">\</span>
+  <span class="token variable">ORACLE_HOSTNAME</span><span class="token punctuation">=</span><span class="token variable">$</span><span class="token punctuation">{</span><span class="token variable">ORACLE_HOSTNAME</span><span class="token punctuation">}</span> <span class="token punctuation">\</span>
+  <span class="token variable">UNIX_GROUP_NAME</span><span class="token punctuation">=</span><span class="token variable">oinstall</span> <span class="token punctuation">\</span>
+  <span class="token variable">INVENTORY_LOCATION</span><span class="token punctuation">=</span><span class="token variable">$</span><span class="token punctuation">{</span><span class="token variable">ORA_INVENTORY</span><span class="token punctuation">}</span> <span class="token punctuation">\</span>
+  <span class="token variable">ORACLE_HOME</span><span class="token punctuation">=</span><span class="token variable">$</span><span class="token punctuation">{</span><span class="token variable">ORACLE_HOME</span><span class="token punctuation">}</span> <span class="token punctuation">\</span>
+  <span class="token variable">ORACLE_BASE</span><span class="token punctuation">=</span><span class="token variable">$</span><span class="token punctuation">{</span><span class="token variable">ORACLE_BASE</span><span class="token punctuation">}</span> <span class="token punctuation">\</span>
+  <span class="token variable">oracle</span><span class="token punctuation">.</span><span class="token variable">install</span><span class="token punctuation">.</span><span class="token variable">db</span><span class="token punctuation">.</span><span class="token variable">InstallEdition</span><span class="token punctuation">=</span><span class="token variable">EE</span> <span class="token punctuation">\</span>
+  <span class="token variable">oracle</span><span class="token punctuation">.</span><span class="token variable">install</span><span class="token punctuation">.</span><span class="token variable">db</span><span class="token punctuation">.</span><span class="token variable">OSDBA_GROUP</span><span class="token punctuation">=</span><span class="token variable">dba</span> <span class="token punctuation">\</span>
+  <span class="token variable">oracle</span><span class="token punctuation">.</span><span class="token variable">install</span><span class="token punctuation">.</span><span class="token variable">db</span><span class="token punctuation">.</span><span class="token variable">OSBACKUPDBA_GROUP</span><span class="token punctuation">=</span><span class="token variable">backupdba</span> <span class="token punctuation">\</span>
+  <span class="token variable">oracle</span><span class="token punctuation">.</span><span class="token variable">install</span><span class="token punctuation">.</span><span class="token variable">db</span><span class="token punctuation">.</span><span class="token variable">OSDGDBA_GROUP</span><span class="token punctuation">=</span><span class="token variable">dgdba</span> <span class="token punctuation">\</span>
+  <span class="token variable">oracle</span><span class="token punctuation">.</span><span class="token variable">install</span><span class="token punctuation">.</span><span class="token variable">db</span><span class="token punctuation">.</span><span class="token variable">OSKMDBA_GROUP</span><span class="token punctuation">=</span><span class="token variable">kmdba</span> <span class="token punctuation">\</span>
+  <span class="token variable">oracle</span><span class="token punctuation">.</span><span class="token variable">install</span><span class="token punctuation">.</span><span class="token variable">db</span><span class="token punctuation">.</span><span class="token variable">OSRACDBA_GROUP</span><span class="token punctuation">=</span><span class="token variable">racdba</span> <span class="token punctuation">\</span>
+  <span class="token variable">SECURITY_UPDATES_VIA_MYORACLESUPPORT</span><span class="token punctuation">=</span><span class="token boolean">false</span> <span class="token punctuation">\</span>
+  <span class="token variable">DECLINE_SECURITY_UPDATES</span><span class="token punctuation">=</span><span class="token boolean">true</span>
+</code></pre>
+<p>如下图所示表示安装数据库软件成功<br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/709391bd069de66d78c110aad9cb84f5.png" alt="在这里插入图片描述"><br>
+然后切换到root用户下，执行以下两个脚本</p>
+<pre><code class="prism language-handlebars"><span class="token variable">sh</span> <span class="token punctuation">/</span><span class="token variable">u01</span><span class="token punctuation">/</span><span class="token variable">app</span><span class="token punctuation">/</span><span class="token variable">oraInventory</span><span class="token punctuation">/</span><span class="token variable">orainstRoot</span><span class="token punctuation">.</span><span class="token variable">sh</span>
+<span class="token variable">sh</span> <span class="token punctuation">/</span><span class="token variable">u01</span><span class="token punctuation">/</span><span class="token variable">app</span><span class="token punctuation">/</span><span class="token variable">oracle</span><span class="token punctuation">/</span><span class="token variable">product</span><span class="token punctuation">/</span><span class="token number">19.3</span><span class="token number">.0</span><span class="token block keyword">/dbhome_1/root.sh</span>
+</code></pre>
+<p><img src="https://i-blog.csdnimg.cn/blog_migrate/22614c9f6b681420067269708b93b832.png" alt="在这里插入图片描述"></p>
+<h3><a id="3__194"></a>3. 配置监听</h3>
+<p>执行su oracle命令切换到oracle用户,使用以下命令启动监听</p>
+<pre><code class="prism language-handlebars"><span class="token variable">lsnrctl</span> <span class="token variable">start</span>    <span class="token punctuation">/</span><span class="token punctuation">/</span><span class="token variable">启动oracle数据库监听</span>
+<span class="token variable">lsnrctl</span> <span class="token variable">status</span>   <span class="token punctuation">/</span><span class="token punctuation">/</span><span class="token variable">查看oracle数据库监听状态</span>
+<span class="token variable">lsnrctl</span> <span class="token variable">stop</span>     <span class="token punctuation">/</span><span class="token punctuation">/</span><span class="token variable">停用oracle数据库监听</span>
+</code></pre>
+<p><img src="https://i-blog.csdnimg.cn/blog_migrate/e9229d69d52d473cbc9be0e4297e7fc7.png" alt="在这里插入图片描述"></p>
+<h3><a id="4__203"></a>4. 创建数据库</h3>
+<p>执行以下命令创建数据库</p>
+<pre><code class="prism language-handlebars"><span class="token variable">dbca</span> <span class="token variable">-silent</span> <span class="token variable">-createDatabase</span> <span class="token punctuation">\</span>
+  <span class="token variable">-templateName</span> <span class="token variable">General_Purpose</span><span class="token punctuation">.</span><span class="token variable">dbc</span> <span class="token punctuation">\</span>
+  <span class="token variable">-gdbname</span> <span class="token variable">$</span><span class="token punctuation">{</span><span class="token variable">ORACLE_SID</span><span class="token punctuation">}</span> <span class="token variable">-sid</span>  <span class="token variable">$</span><span class="token punctuation">{</span><span class="token variable">ORACLE_SID</span><span class="token punctuation">}</span> <span class="token punctuation">\</span>
+  <span class="token variable">-responseFile</span> <span class="token variable">NO_VALUE</span> <span class="token punctuation">\</span>
+  <span class="token variable">-characterSet</span> <span class="token variable">AL32UTF8</span> <span class="token punctuation">\</span>
+  <span class="token variable">-sysPassword</span> <span class="token number">123456</span> <span class="token punctuation">\</span>
+  <span class="token variable">-systemPassword</span> <span class="token number">123456</span> <span class="token punctuation">\</span>
+  <span class="token variable">-createAsContainerDatabase</span> <span class="token boolean">true</span> <span class="token punctuation">\</span>
+  <span class="token variable">-numberOfPDBs</span> <span class="token number">1</span> <span class="token punctuation">\</span>
+  <span class="token variable">-pdbName</span> <span class="token variable">$</span><span class="token punctuation">{</span><span class="token variable">PDB_NAME</span><span class="token punctuation">}</span> <span class="token punctuation">\</span>
+  <span class="token variable">-pdbAdminPassword</span> <span class="token number">123456</span> <span class="token punctuation">\</span>
+  <span class="token variable">-databaseType</span> <span class="token variable">MULTIPURPOSE</span> <span class="token punctuation">\</span>
+  <span class="token variable">-automaticMemoryManagement</span> <span class="token boolean">false</span> <span class="token punctuation">\</span>
+  <span class="token variable">-totalMemory</span> <span class="token number">800</span> <span class="token punctuation">\</span>
+  <span class="token variable">-storageType</span> <span class="token variable">FS</span> <span class="token punctuation">\</span>
+  <span class="token variable">-datafileDestination</span> <span class="token string">"${DATA_DIR}"</span> <span class="token punctuation">\</span>
+  <span class="token variable">-redoLogFileSize</span> <span class="token number">50</span> <span class="token punctuation">\</span>
+  <span class="token variable">-emConfiguration</span> <span class="token variable">NONE</span> <span class="token punctuation">\</span>
+  <span class="token variable">-ignorePreReqs</span>
+</code></pre>
+<p>创建数据库过程如下：</p>
+<pre><code class="prism language-linux">[oracle@jamysong dbhome_1]$ dbca -silent -createDatabase \
+&gt;   -templateName General_Purpose.dbc \
+&gt;   -gdbname ${ORACLE_SID} -sid  ${ORACLE_SID} \
+&gt;   -responseFile NO_VALUE \
+&gt;   -characterSet AL32UTF8 \
+&gt;   -sysPassword 123456 \
+&gt;   -systemPassword 123456 \
+&gt;   -createAsContainerDatabase true \
+&gt;   -numberOfPDBs 1 \
+&gt;   -pdbName ${PDB_NAME} \
+&gt;   -pdbAdminPassword 123456 \
+&gt;   -databaseType MULTIPURPOSE \
+&gt;   -automaticMemoryManagement false \
+&gt;   -totalMemory 800 \
+&gt;   -storageType FS \
+&gt;   -datafileDestination "${DATA_DIR}" \
+&gt;   -redoLogFileSize 50 \
+&gt;   -emConfiguration NONE \
+&gt;   -ignorePreReqs
+[WARNING] [DBT-06208] The 'SYS' password entered does not conform to the Oracle recommended standards.
+   CAUSE: 
+a. Oracle recommends that the password entered should be at least 8 characters in length, contain at least 1 uppercase character, 1 lower case character and 1 digit [0-9].
+b.The password entered is a keyword that Oracle does not recommend to be used as password
+   ACTION: Specify a strong password. If required refer Oracle documentation for guidelines.
+[WARNING] [DBT-06208] The 'SYSTEM' password entered does not conform to the Oracle recommended standards.
+   CAUSE: 
+a. Oracle recommends that the password entered should be at least 8 characters in length, contain at least 1 uppercase character, 1 lower case character and 1 digit [0-9].
+b.The password entered is a keyword that Oracle does not recommend to be used as password
+   ACTION: Specify a strong password. If required refer Oracle documentation for guidelines.
+[WARNING] [DBT-06208] The 'PDBADMIN' password entered does not conform to the Oracle recommended standards.
+   CAUSE: 
+a. Oracle recommends that the password entered should be at least 8 characters in length, contain at least 1 uppercase character, 1 lower case character and 1 digit [0-9].
+b.The password entered is a keyword that Oracle does not recommend to be used as password
+   ACTION: Specify a strong password. If required refer Oracle documentation for guidelines.
+Prepare for db operation
+8% complete
+Copying database files
+31% complete
+Creating and starting Oracle instance
+32% complete
+36% complete
+40% complete
+43% complete
+46% complete
+Completing Database Creation
+51% complete
+53% complete
+54% complete
+Creating Pluggable Databases
+58% complete
+77% complete
+Executing Post Configuration Actions
+100% complete
+Database creation complete. For details check the logfiles at:
+ /u01/app/oracle/cfgtoollogs/dbca/orcl.
+Database Information:
+Global Database Name:orcl
+System Identifier(SID):orcl
+Look at the log file "/u01/app/oracle/cfgtoollogs/dbca/orcl/orcl.log" for further details.
+</code></pre>
+<p>然后使用sqlplus / as sysdba登录数据库</p>
+<pre><code class="prism language-linux">创建用户
+create user c##jamy identified by 123456;
+给用户授权
+grant connect, resource,dba to c##jamy;
+</code></pre>
+<p><img src="https://i-blog.csdnimg.cn/blog_migrate/1d90f617120095590784c5fe520f10cf.png" alt="在这里插入图片描述"><br>
+navicat客户端登录数据库<br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/931c829d4ddac00925022ddaed59253a.png" alt="在这里插入图片描述"><br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/e86b1fae6a017a9bfbaf2e11db714f6e.png" alt="在这里插入图片描述"></p>
+<p>如果客户端连接数据库报错如下，有可能是数据库实例没有启动<br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/c1fc1c5bffa581de97f0187b9e0f27ae.png" alt="在这里插入图片描述"></p>
+<pre><code>可以登录服务器端执行如下命令：
+查看数据库监听
+lsnrctl status
+如果没有开启监听，需要执行 lsnrctl start 开启监听
+如下图所示表示已开启监听
+</code></pre>
+<p><img src="https://i-blog.csdnimg.cn/blog_migrate/34269c0e6cd16101c42b45aef32e43bf.png" alt="在这里插入图片描述"></p>
+<pre><code>开启监听以后执行 sqlplus / as sysdba
+最后执行startup 来启动数据库实例，然后用数据库客户端就可以连接了
+</code></pre>
+<p><img src="https://i-blog.csdnimg.cn/blog_migrate/957938ccf355434c3491909fb408891d.png" alt="在这里插入图片描述"></p>
+<p>再次通过navicat客户端连接数据库，如下图所示可以连接了<br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/97f5a875229d0802d1928562e20d674a.png" alt="在这里插入图片描述"></p>
+
+    </div>
+  </div>
+</body>
+
+</html>
