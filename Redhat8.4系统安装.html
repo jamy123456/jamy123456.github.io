@@ -1,0 +1,300 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="referrer" content="no-referrer">
+  <title>Redhat8.4系统安装</title>
+  <link rel="stylesheet" href="https://stackedit.io/style.css" />
+</head>
+
+<body class="stackedit">
+  <div class="stackedit__left">
+    <div class="stackedit__toc">
+      
+<ul>
+<li>
+<ul>
+<li></li>
+</ul>
+</li>
+</ul>
+
+    </div>
+  </div>
+  <div class="stackedit__right">
+    <div class="stackedit__html">
+      <p></p><div class="toc"><h3>目录</h3><ul><ul><ul><li><a href="#1__2">1. 启动镜像</a></li><li><a href="#2__5">2. 选择语言</a></li><li><a href="#3__8">3. 选则键盘布局</a></li><li><a href="#4__13">4. 磁盘分区</a></li><ul><li><a href="#41_boot_16">4.1 创建引导分区（/boot）</a></li><li><a href="#42__24">4.2 创建根分区（/）</a></li><li><a href="#43_swap_32">4.3 创建swap分区</a></li></ul><li><a href="#5_KDUMP_41">5. KDUMP</a></li><li><a href="#6__44">6. 设置时区</a></li><li><a href="#7__47">7. 软件选择</a></li><li><a href="#8__50">8. 网络和主机名</a></li><li><a href="#9_root_54">9. 设置root账户密码</a></li><li><a href="#10__57">10. 创建普通用户</a></li><li><a href="#11__62">11. 安装系统</a></li><li><a href="#12_SSH_79">12. SSH登录系统</a></li><li><a href="#13__82">13. 更换镜像源</a></li><li><a href="#14_IP_124">14. 设置静态IP地址</a></li><li><a href="#15_U_189">15. 挂载U盘设备</a></li><li><a href="#16root_200">16.忘记root密码怎么办？</a></li><li><a href="#17__209">17 配置在线镜像源（补充）</a></li></ul></ul></ul></div><p></p>
+<h3><a id="1__2"></a>1. 启动镜像</h3>
+<p>启动镜像，选择第一条Install Red Hat Enterprise Linux 8.4,然后回车进入系统安装界面<br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/aafc01b41e1910df6a8da7f4933ca847.png#pic_center" alt="在这里插入图片描述"></p>
+<h3><a id="2__5"></a>2. 选择语言</h3>
+<p>这里我们直接选择简体中文，然后点击continue<br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/b042812a331ae5158faaf30f497faec5.png#pic_center" alt="在这里插入图片描述"></p>
+<h3><a id="3__8"></a>3. 选则键盘布局</h3>
+<p>这里点击键盘，一如既往选择汉语<br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/0f97326927a1d8464519fc55b1361497.png#pic_center" alt="在这里插入图片描述"><br>
+然后点击“完成”两次回到系统安装主界面<br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/b25338ec1ebee05d5cb6cb593d6a41f7.png#pic_center" alt="在这里插入图片描述"></p>
+<h3><a id="4__13"></a>4. 磁盘分区</h3>
+<p>系统安装主界面点击安装目的地，进入安装目标位置界面，在“存储位置”<br>
+下面选择“自定义”，然后点击“完成”两次，进入磁盘分区界面<img src="https://i-blog.csdnimg.cn/blog_migrate/4cf8cec14e365597d3cb2befca477a08.png#pic_center" alt="在这里插入图片描述"></p>
+<h4><a id="41_boot_16"></a>4.1 创建引导分区（/boot）</h4>
+<p>手动分区界面，第一次点击“+”，弹出添加新挂载点弹框<br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/e6280f2f39904de30787883ca20a3228.png#pic_center" alt="在这里插入图片描述"><br>
+在添加新挂载点弹框中设置/boot分区大小为1G,然后点击“添加新挂载点”完成添加/boot分区<br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/147f2c0a862a1cf0e21e469726828df4.png#pic_center" alt="在这里插入图片描述"></p>
+<h4><a id="42__24"></a>4.2 创建根分区（/）</h4>
+<p>手动分区界面，第二次点击“+”，弹出添加新挂载点弹框<br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/196b91c2fb4b3c57d7f2360d217bd03e.png#pic_center" alt="在这里插入图片描述"><br>
+在添加新挂载点弹框中设置/分区大小为47G,然后点击“添加新挂载点”完成添加/分区<br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/0477c9c66ff492400e63e999fdbc5bf9.png#pic_center" alt="在这里插入图片描述"></p>
+<h4><a id="43_swap_32"></a>4.3 创建swap分区</h4>
+<p>手动分区界面，第三次点击“+”，弹出添加新挂载点弹框<br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/e62941b89d6a3fde57019ce8219ca5be.png#pic_center" alt="在这里插入图片描述"><br>
+在添加新挂载点弹框中设置swap分区大小为47G,然后点击“添加新挂载点”完成添加swap分区<br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/420f5a36e8d1014fbf4a87ae7ecd9225.png#pic_center" alt="在这里插入图片描述"><br>
+到此所有分区创建分区设置完毕，然后点击“完成“两次，弹出更改摘要界面<br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/c4a3733132ed7da67f36de747f96eaa6.png#pic_center" alt="在这里插入图片描述"><br>
+在当前界面点击右下方”接受更改“确认创建刚才设置的分区，然后回到系统安装主界面<br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/51f91b73c4c8a5417c3fd3379f41e7a2.png#pic_center" alt="在这里插入图片描述"></p>
+<h3><a id="5_KDUMP_41"></a>5. KDUMP</h3>
+<p>系统安装主界面点击"KDUMP"进入KDUMP界面，去掉启用kdump前面的勾（这个对我们暂时没什么用），然后点击”完成“两次，回到系统安装主界面<br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/d914870ab34074c8c4f4530ebc7b7c98.png#pic_center" alt="在这里插入图片描述"></p>
+<h3><a id="6__44"></a>6. 设置时区</h3>
+<p>系统安装主界面点击”时间个日期“，进入日渐个日期设置界面，这里选择上海即可，然后点击”完成“两次，回到系统安装主界面<br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/89ffd8066dbf8304fe76f14e38b4e1fc.png#pic_center" alt="在这里插入图片描述"></p>
+<h3><a id="7__47"></a>7. 软件选择</h3>
+<p>系统安装主界面点击”软件选择“，进入软件选择界面，选中"带GUI的服务器"，然后点击”完成“两次，回到系统安装主界面<br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/5e24eea5ca125ea0be5e968e17fab559.png#pic_center" alt="在这里插入图片描述"></p>
+<h3><a id="8__50"></a>8. 网络和主机名</h3>
+<p>系统安装主界面点击”网络和主机名“，进入网络和主机名界面，这里打开网络连接，主机名默认就好，然后点击”完成“两次，回到系统安装主界面<br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/7fb17ca121ae6158b733edda9ad1d335.png#pic_center" alt="在这里插入图片描述"></p>
+<h3><a id="9_root_54"></a>9. 设置root账户密码</h3>
+<p>系统安装主界面点击”根密码“进入root密码界面，输入后点击”完成“两次回到系统安装主界面<br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/466bf00ae75c671856b6ed1361c1eec8.png#pic_center" alt="在这里插入图片描述"></p>
+<h3><a id="10__57"></a>10. 创建普通用户</h3>
+<p>系统安装主界面点击”创建用户“来创建用户<br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/f6eeb996bfdafd76c541c9f5acce0bac.png#pic_center" alt="在这里插入图片描述"><br>
+进入创建用户界面，输入用户名称密码后点击”完成“两次回到系统安装主界面<br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/25967cce59b902d25c3ec67329a473bb.png#pic_center" alt="在这里插入图片描述"></p>
+<h3><a id="11__62"></a>11. 安装系统</h3>
+<p>（1）系统安装主界面点击下图中”开始安装“按钮进行系统安装<br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/61df33c03621c1ab8439eb7684228ab1.png#pic_center" alt="在这里插入图片描述"><br>
+（2）系统安装需要一些时间，耐心等待一会。。。<br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/5cc1517c24fe8f0680c5303b2242942c.png#pic_center" alt="在这里插入图片描述"><br>
+（3）系统安装完成，点击下图中”重启系统“按钮进行重启<br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/bf11d1417b3c872a370ebf8c8df1cfab.png#pic_center" alt="在这里插入图片描述"><br>
+（4）重启后会进入这个界面，点击”许可证“进入许可信息界面<br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/39fa2a16209b5aeb3d826624b5ad743c.png#pic_center" alt="在这里插入图片描述"><br>
+（5）在许可信息界面，勾选上”我同意许可协议“，然后点击”完成“两次后进入初始设置界面<br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/e284b2021260e4be899b8fd09bb96e2c.png#pic_center" alt="在这里插入图片描述"><br>
+（6）在初始设置界面点击右下角”结束配置“，然后重启系统<br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/0b45095eae18dc88f23931fa4e16cf0c.png#pic_center" alt="在这里插入图片描述"><br>
+（7）重启系统后进入登录页面，输入root账户密码<br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/69a38efbcb9de2a9d578d706432592b0.png#pic_center" alt="在这里插入图片描述"><br>
+（8）查看系统版本信息，说明redhat8.4已经安装成功，相比Debian，Ubuntu这些系统，它可以直接使用root账户登录<br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/0eb010c3853ce6cb5afe981c9a50c0a6.png#pic_center" alt="在这里插入图片描述"></p>
+<h3><a id="12_SSH_79"></a>12. SSH登录系统</h3>
+<p>可以直接使用像Xshell这种客户端直接登录系统，不需要多余设置<br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/45a774a76c7e49e9701da8eb198ed245.png#pic_center" alt="在这里插入图片描述"></p>
+<h3><a id="13__82"></a>13. 更换镜像源</h3>
+<p>（1）卸载redhat订阅提示</p>
+<pre><code>执行yum remove subscription-manager，卸载redhat订阅提示，不然每次都提示你去注册This system is not registered to Red Hat Subscription Management
+</code></pre>
+<p>（2）配置文件中关闭这个官方的订阅</p>
+<pre><code>vim /etc/yum/pluginconf.d/product-id.conf，
+vim /etc/yum/pluginconf.d/subscription-manager.conf
+将enabled=1修改为enabled=0
+并且为了确保依赖的软件包删除干净，在执行下这个命令
+yum remove dnf-plugin-subscription-manager
+</code></pre>
+<p>（3）配置centos8的阿里云镜像源<br>
+第一种配置在线镜像源</p>
+<pre><code>执行curl -o /etc/yum.repos.d/CentOS-Base.repo https://mirrors.aliyun.com/repo/Centos-8.repo
+</code></pre>
+<p>第二种配置本地镜像源<br>
+首先挂载镜像文件<br>
+mount  /dev/sr0  /mnt<br>
+然后再/etc/yum.repos.d目录下创建local.repo文件并编辑local.repo文件，添加内容如下</p>
+<pre><code>[Local-Base]
+name=Local-Base
+baseurl=file:///mnt/BaseOS
+gpgcheck=0
+enabled=1
+[AppStream]
+name=AppStream
+baseurl=file:///mnt/AppStream
+gpgcheck=0
+enabled=1
+</code></pre>
+<p>然后执行yum install gcc测试能正常安装即可</p>
+<h3><a id="14_IP_124"></a>14. 设置静态IP地址</h3>
+<p>因为我们在虚拟机中安装完系统使用的dhcp动态分配的IP地址，这个地址有时候发生改变，导致我们有时候用远程连接工具是连接不上的，所以这里我们干脆把ip地址设置成静态IP地址，这样后面永远不会发生变化，方便后续的学习，编辑如下内容即可，根据你自己电脑的实际情况编辑即可</p>
+<pre><code>BOOTPROTO="static"
+IPADDR=192.168.227.102      
+NETMASK=255.255.255.0
+GATEWAY=192.168.227.2
+DNS1=114.114.114.114
+DNS2=8.8.8.8
+ONBOOT="yes"
+</code></pre>
+<p><img src="https://i-blog.csdnimg.cn/blog_migrate/87498ce9d7775b2fd9e8a971df68db81.png" alt="在这里插入图片描述"><br>
+编辑完保存，然后执行下面命令重启网卡即可</p>
+<pre><code>nmcli connection reload
+nmcli connection down ens160 
+nmcli connection up ens160 
+</code></pre>
+<p>然后执行ifconfig查看，如下图所示，表示设置静态ip成功</p>
+<p><img src="https://i-blog.csdnimg.cn/blog_migrate/09bbe6ba64869e6d1e0f128c6cb95c8f.png" alt="在这里插入图片描述"><br>
+也可以通过下面命令设置静态IP地址：</p>
+<pre><code>查看网络设备状态
+nmcli 
+
+查看网络详细信息
+nmcli device show ens160
+
+设置静态IP地址
+nmcli connection modify ens160 ipv4.addresses '192.168.227.120'
+
+设置网关
+nmcli connection modify ens160 ipv4.gateway '192.168.227.2'
+
+设置dns
+nmcli connection modify ens160 ipv4.dns '114.114.114.114'
+
+设置IP地址为手动指定
+nmcli connection modify ens160 ipv4.method manual
+
+设置IP地址为dhcp自动获取
+nmcli connection modify ens160 ipv4.method auto
+
+设置开机自动连接
+nmcli connection modify ens160 connection.autoconnect yes
+nmcli connection modify ens160 connection.autoconnect no
+
+nmcli 重新加载ens160网卡配置文件
+nmcli connection reload
+
+不重启系统让网卡生效
+nmcli connection up ens160
+nmcli device connect ens160
+nmcli device reapply ens160
+
+查看dns
+cat /etc/resolv.conf
+
+查看路由
+ip route
+</code></pre>
+<h3><a id="15_U_189"></a>15. 挂载U盘设备</h3>
+<p>首先执行fdisk -l查询连接到Linux系统的U盘设备<br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/4a712217eaa2edbd61573409170c783d.png" alt="在这里插入图片描述"><br>
+然后挂载U盘设备<br>
+mount  /dev/sdb1  /mnt<br>
+我们看到挂载mnt目录下已经有U盘设备下的文件了<br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/1627e166d6fb4e35ab41d250fc1646a1.png" alt="在这里插入图片描述"><br>
+卸载U盘设备挂载<br>
+umount  /dev/sdb1<br>
+我们再次查看mnt挂载目录，此时已经没有什么内容了<br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/38f7ce8dce51d5f7009b4bb9ab3f18f3.png" alt="在这里插入图片描述"></p>
+<h3><a id="16root_200"></a>16.忘记root密码怎么办？</h3>
+<p>（1）重启linux,再快进入启动界面是连续点击两次e字母进入黑色窗口界面，将ro改成rw,在linux这一行末尾加上rd.break,然后按ctrl + x进入救援模式系统界面</p>
+<p><img src="https://i-blog.csdnimg.cn/blog_migrate/28bd187aa4609284c61ea22a4c647d2d.png" alt="在这里插入图片描述"><br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/b8a06ded12d12463b562492243881af4.png" alt="在这里插入图片描述"><br>
+（2）进入救援模式系统界面，执行chroot  /sysroot后继续执行passwd root修改root用户密码，需要输入两次，最后执行touch /.autorelabel后执行两次exit退出救援模式，等待重启进入登录界面，用修改后的root用户密码登陆即可</p>
+<p><img src="https://i-blog.csdnimg.cn/blog_migrate/6b4a59b28a1bb0bad6637f00dbdce57f.png" alt="在这里插入图片描述"><br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/4f9f09927635df23b317181d28f86921.png" alt="在这里插入图片描述"></p>
+<h3><a id="17__209"></a>17 配置在线镜像源（补充）</h3>
+<p>第一步：修改红帽订阅管理配置文件</p>
+<pre><code>vim /etc/yum/pluginconf.d/subscription-manager.conf
+修改内容如下，将enabled的值修改为0
+</code></pre>
+<p>第二步：删除redhat.repo仓库配置文件</p>
+<pre><code>cd /etc/yum.repos.d/
+rm -rf redhat.repo
+</code></pre>
+<p>第三步：编辑aliyun.repo配置文件</p>
+<pre><code>vi  aliyun.repo
+添加如下内容anolis8.4的镜像源或是centos8.4的镜像源皆可
+==================================================================================
+anolis8.4的镜像源地址：
+[AppStream]
+name=AppStream
+baseurl=https://mirrors.openanolis.cn/anolis/8.4/AppStream/$basearch/os
+gpgcheck=0
+enabled=1
+
+[BaseOS]
+name=BaseOS
+baseurl=https://mirrors.openanolis.cn/anolis/8.4/BaseOS/$basearch/os
+gpgcheck=0
+enabled=1
+
+[Extras]
+name=Extras
+baseurl=https://mirrors.openanolis.cn/anolis/8.4/Extras/$basearch/os
+gpgcheck=0
+enabled=1
+
+[Plus]
+name=Plus
+baseurl=https://mirrors.openanolis.cn/anolis/8.4/Plus/$basearch/os
+gpgcheck=0
+enabled=1
+
+[PowerTools]
+name=PowerTools
+baseurl=https://mirrors.openanolis.cn/anolis/8.4/PowerTools/$basearch/os
+gpgcheck=0
+enabled=1
+
+===================================================================================
+centos8.5镜像源地址
+[base]
+name=base
+failovermethod=priority
+baseurl=https://mirrors.aliyun.com/centos/8.5.2111/BaseOS/$basearch/os/
+gpgcheck=1
+gpgkey=https://mirrors.aliyun.com/centos/RPM-GPG-KEY-CentOS-Official
+ 
+[extras]
+name=extras
+failovermethod=priority
+baseurl=https://mirrors.aliyun.com/centos/8.5.2111/extras/$basearch/os/
+gpgcheck=1
+gpgkey=https://mirrors.aliyun.com/centos/RPM-GPG-KEY-CentOS-Official
+ 
+[centosplus]
+name=centosplus
+failovermethod=priority
+baseurl=https://mirrors.aliyun.com/centos/8.5.2111/centosplus/$basearch/os/
+gpgcheck=1
+enabled=0
+gpgkey=https://mirrors.aliyun.com/centos/RPM-GPG-KEY-CentOS-Official
+ 
+[PowerTools]
+name=PowerTools
+failovermethod=priority
+baseurl=https://mirrors.aliyun.com/centos/8.5.2111/PowerTools/$basearch/os/
+gpgcheck=1
+enabled=0
+gpgkey=https://mirrors.aliyun.com/centos/RPM-GPG-KEY-CentOS-Official
+
+[AppStream]
+name=AppStream
+failovermethod=priority
+baseurl=https://mirrors.aliyun.com/centos/8.5.2111/AppStream/$basearch/os/
+gpgcheck=1
+gpgkey=https://mirrors.aliyun.com/centos/RPM-GPG-KEY-CentOS-Official
+</code></pre>
+<p>然后执行yum repolist查看下仓库<br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/ed8d95e33691a273d75f41ec6a6484dd.png" alt="在这里插入图片描述"><br>
+到此在线镜像源配置完成！！！</p>
+
+    </div>
+  </div>
+</body>
+
+</html>

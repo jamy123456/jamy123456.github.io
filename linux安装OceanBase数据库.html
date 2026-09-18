@@ -1,0 +1,476 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="referrer" content="no-referrer">
+  <title>linux安装OceanBase数据库</title>
+  <link rel="stylesheet" href="https://stackedit.io/style.css" />
+</head>
+
+<body class="stackedit">
+  <div class="stackedit__left">
+    <div class="stackedit__toc">
+      
+<ul>
+<li>
+<ul>
+<li></li>
+</ul>
+</li>
+</ul>
+
+    </div>
+  </div>
+  <div class="stackedit__right">
+    <div class="stackedit__html">
+      <p></p><div class="toc"><h3>目录</h3><ul><ul><ul><li><a href="#1OceanBase_1">1.下载OceanBase数据库安装包</a></li><li><a href="#2_OBD_9">2. 解压安装包并安装OBD</a></li><li><a href="#3OBD_20">3.检测OBD是否安装成功</a></li><li><a href="#4__OceanBase__30">4. 启动 OceanBase 数据库</a></li><li><a href="#5_OceanBase__205">5. 登录OceanBase 数据库</a></li><li><a href="#6__225">6. 客户端连接</a></li><li><a href="#7OceanBase_247">7.OceanBase服务相关命令</a></li><li><a href="#8_300">8.删除集群</a></li><li><a href="#9ODCwebdocker_363">9.部署ODC的web端服务(docker容器部署)</a></li><li><a href="#10ODCweblinux_433">10.部署ODC的web端服务(直接在linux下部署)</a></li></ul></ul></ul></div><p></p>
+<h3><a id="1OceanBase_1"></a>1.下载OceanBase数据库安装包</h3>
+<p><a href="https://open.oceanbase.com/quickStart">OceanBase官网下载页面</a></p>
+<p><img src="https://i-blog.csdnimg.cn/blog_migrate/d1fb40061ecaac91db849a340c3b3704.png" alt="在这里插入图片描述"><br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/5d2710300dcd2435aa1164ad89a1c3dd.png" alt="在这里插入图片描述"></p>
+<h3><a id="2_OBD_9"></a>2. 解压安装包并安装OBD</h3>
+<pre><code>tar -xzf oceanbase-all-in-one.4.0.0.0-beta-100120221102135736.el7.x86_64.tar.gz
+cd oceanbase-all-in-one/bin/
+安装obd
+./install.sh
+设置环境变量
+source /root/.oceanbase-all-in-one/bin/env.sh
+</code></pre>
+<h3><a id="3OBD_20"></a>3.检测OBD是否安装成功</h3>
+<pre><code>执行 which obd 和 which obclient 检测是否安装成功，如果可以找到 obd 和 obclient 则表示安装
+[root@test .obd]# which obd
+/root/.oceanbase-all-in-one/obd/usr/bin/obd
+[root@test .obd]# which obclient
+/root/.oceanbase-all-in-one/obclient/u01/obclient/bin/obclient
+</code></pre>
+<h3><a id="4__OceanBase__30"></a>4. 启动 OceanBase 数据库</h3>
+<pre><code>第一种方式：这是官网提供的快速部署启动单实例OceanBase的数据库
+（1）部署并启动 OceanBase 数据库
+obd demo
+（2）使用 OBClient 客户端连接到 OceanBase 数据库
+obclient -h127.0.0.1 -uroot -P2881
+
+
+第二种方式：自定义部署启动单实例OceanBase的数据库
+（1）配置文件：oceanbase-jamy.yaml,内容如下
+#===================================================
+## Only need to configure when remote login is required
+# user:
+#   username: your username
+#   password: your password if need
+#   key_file: your ssh-key file path if need
+#   port: your ssh port, default 22
+#   timeout: ssh connection timeout (second), default 30
+oceanbase-ce:
+  servers:
+    # Please don't use hostname, only IP can be supported
+  - 127.0.0.1
+  global:
+    # The working directory for OceanBase Database. OceanBase Database is started under this directory. This is a required field.
+    home_path: /root/oceanbase-jamy
+    # The directory for data storage. The default value is $home_path/store.
+    # data_dir: /data
+    # The directory for clog, ilog, and slog. The default value is the same as the data_dir value.
+    # redo_dir: /redo
+    # Please set devname as the network adaptor's name whose ip is  in the setting of severs.
+    # if set severs as "127.0.0.1", please set devname as "lo"
+    # if current ip is 192.168.1.10, and the ip's network adaptor's name is "eth0", please use "eth0"
+    devname: lo
+    # External port for OceanBase Database. The default value is 2881. DO NOT change this value after the cluster is started.
+    mysql_port: 2888
+    # Internal port for OceanBase Database. The default value is 2882. DO NOT change this value after the cluster is started.
+    rpc_port: 2889
+    # Defines the zone for an observer. The default value is zone1.
+    zone: zone1
+    # The maximum running memory for an observer. When ignored, autodeploy calculates this value based on the current server available resource.
+    memory_limit: 6G
+    # The percentage of the maximum available memory to the total memory. This value takes effect only when memory_limit is 0. The default value is 80.
+    # memory_limit_percentage: 80
+    # The reserved system memory. system_memory is reserved for general tenants. The default value is 30G. Autodeploy calculates this value based on the current server available resource.
+    system_memory: 3G
+    enable_syslog_recycle: true
+    enable_syslog_wf: false
+    max_syslog_file_count: 4
+    production_mode: false
+    __min_full_resource_pool_memory: 1073741824
+    cpu_count: 2
+    datafile_size: 5G
+    log_disk_size: 5G
+    # The size of a data file. When ignored, autodeploy calculates this value based on the current server available resource.
+    # datafile_size: 200G
+    # The size of disk space used by the clog files. When ignored, autodeploy calculates this value based on the current server available resource.
+    # log_disk_size: 66G
+    # System log level. The default value is WDIAG.
+    # syslog_level: WDIAG
+    # Print system logs whose levels are higher than WARNING to a separate log file. The default value is true. The default value for autodeploy mode is false.
+    # enable_syslog_wf: false
+    # Enable auto system log recycling or not. The default value is false. The default value for autodeploy mode is on.
+    # enable_syslog_recycle: true
+    # The maximum number of reserved log files before enabling auto recycling. When set to 0, no logs are deleted. The default value for autodeploy mode is 4.
+    # max_syslog_file_count: 4
+    # Cluster name for OceanBase Database. The default value is obcluster. When you deploy OceanBase Database and obproxy, this value must be the same as the cluster_name for obproxy.
+    #appname: obcluster
+    # Password for root. The default value is empty.
+    #root_password:
+    # Password for proxyro. proxyro_password must be the same as observer_sys_password. The default value is empty.
+    # proxyro_password:
+#===================================================
+注意：你的磁盘大小需要大于memory_limit+system_memory+__min_full_resource_pool_memory+datafile_size+log_disk_size的总和，这里就是要大于20G（6G+3G+1G+5G+5G），还有一点要注意的是memory_limit的大小会决定OceanBase数据库能否成功启动，我这里虚拟机linux的内存大小给的是10G,除去系统本身用去的内存，实际可用的的内存就没有10G了，我第一次启动就失败了，截图如下：报了一个内存不够的报错提示，所以我把配置文件中memory_limit的值调整为6G,最后启动成功！！！
+
+（2）部署
+obd cluster deploy 集群名 -c  yaml部署文件路径
+例如：
+obd cluster deploy  oceanbase-jamy  -c  /opt/oceanbase-all-in-one/conf/autodeploy/oceanbase-jamy.yaml
+
+（3）启动数据库
+obd cluster start  oceanbase-jamy
+
+（4）连接数据库
+obclient -h127.0.0.1 -uroot@sys -P2888
+</code></pre>
+<p><img src="https://i-blog.csdnimg.cn/blog_migrate/4fbc58c42c28982fd7ff4448b21a08eb.png" alt="在这里插入图片描述"></p>
+<p>自定义部署启动过程如下所示：</p>
+<pre><code>[root@localhost ~]# obd cluster deploy  oceanbase-jamy  -c  /opt/oceanbase-all-in-one/conf/autodeploy/oceanbase-jamy.yaml
++--------------------------------------------------------------------------------------------+
+|                                          Packages                                          |
++--------------+---------+------------------------+------------------------------------------+
+| Repository   | Version | Release                | Md5                                      |
++--------------+---------+------------------------+------------------------------------------+
+| oceanbase-ce | 4.1.0.0 | 100000202023040520.el7 | d598937b1cfb1df85e2c2231acf024e4994db533 |
++--------------+---------+------------------------+------------------------------------------+
+Repository integrity check ok
+Parameter check ok
+Open ssh connection ok
+Cluster status check ok
+Initializes observer work home ok
+Remote oceanbase-ce-4.1.0.0-100000202023040520.el7-d598937b1cfb1df85e2c2231acf024e4994db533 repository install ok
+Remote oceanbase-ce-4.1.0.0-100000202023040520.el7-d598937b1cfb1df85e2c2231acf024e4994db533 repository lib check !!
+Try to get lib-repository
+Remote oceanbase-ce-libs-4.1.0.0-100000202023040520.el7-5d24535db655b4dce6fc62aedc4d0e867225792a repository install ok
+Remote oceanbase-ce-4.1.0.0-100000202023040520.el7-d598937b1cfb1df85e2c2231acf024e4994db533 repository lib check ok
+oceanbase-jamy deployed
+Trace ID: 3b3eab88-07a1-11ee-a9ec-000c291d4602
+If you want to view detailed obd logs, please run: obd display-trace 3b3eab88-07a1-11ee-a9ec-000c291d4602
+[root@localhost ~]# obd cluster list
++----------------------------------------------------------------------+
+|                             Cluster List                             |
++----------------+-----------------------------------+-----------------+
+| Name           | Configuration Path                | Status (Cached) |
++----------------+-----------------------------------+-----------------+
+| demo           | /root/.obd/cluster/demo           | stopped         |
+| oceanbase-jamy | /root/.obd/cluster/oceanbase-jamy | deployed        |
++----------------+-----------------------------------+-----------------+
+Trace ID: 3e8fd852-07a1-11ee-b05e-000c291d4602
+If you want to view detailed obd logs, please run: obd display-trace 3e8fd852-07a1-11ee-b05e-000c291d4602
+[root@localhost oceanbase-jamy]# obd cluster start oceanbase-jamy
+Get local repositories ok
+Search plugins ok
+Open ssh connection ok
+Load cluster param plugin ok
+Check before start observer ok
+[WARN] OBD-1012: (127.0.0.1) clog and data use the same disk (/)
+
+Start observer ok
+observer program health check ok
+Connect to observer ok
+Initialize oceanbase-ce ok
+Wait for observer init ok
++---------------------------------------------+
+|                   observer                  |
++-----------+---------+------+-------+--------+
+| ip        | version | port | zone  | status |
++-----------+---------+------+-------+--------+
+| 127.0.0.1 | 4.1.0.0 | 2888 | zone1 | ACTIVE |
++-----------+---------+------+-------+--------+
+obclient -h127.0.0.1 -P2888 -uroot -Doceanbase -A
+
+oceanbase-jamy running
+Trace ID: 6e7cc6b0-07a1-11ee-a3f9-000c291d4602
+If you want to view detailed obd logs, please run: obd display-trace 6e7cc6b0-07a1-11ee-a3f9-000c291d4602
+[root@localhost oceanbase-jamy]# obclient -h127.0.0.1 -P2888 -uroot
+Welcome to the OceanBase.  Commands end with ; or \g.
+Your OceanBase connection id is 3221487617
+Server version: OceanBase_CE 4.1.0.0 (r100000202023040520-0765e69043c31bf86e83b5d618db0530cf31b707) (Built Apr  5 2023 20:26:14)
+
+Copyright (c) 2000, 2018, OceanBase and/or its affiliates. All rights reserved.
+
+Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
+
+obclient [(none)]&gt; show databases;
++--------------------+
+| Database           |
++--------------------+
+| information_schema |
+| LBACSYS            |
+| mysql              |
+| oceanbase          |
+| ORAAUDITOR         |
+| SYS                |
+| test               |
++--------------------+
+7 rows in set (0.003 sec)
+
+obclient [(none)]&gt;
+</code></pre>
+<h3><a id="5_OceanBase__205"></a>5. 登录OceanBase 数据库</h3>
+<pre><code>本地登录（刚安装完登录root用户默认密码为空即直接回车即可连接上数据库，但是新版不是为空，但是会直接在命令行启动窗口给提示临时登录密码是多少）
+obclient -h127.0.0.1 -uroot -P2881
+
+创建数据库
+create database test2 default charset utf8mb4;
+
+创建用户
+create user jamy@'%' identified by '123456';
+
+修改用户密码
+alter user jamy@'%' identified by 'jamy';
+
+授权用户
+grant all privileges on *.* to jamy@'%';
+</code></pre>
+<p><img src="https://i-blog.csdnimg.cn/blog_migrate/0756fffec3840958ada23a80dba18774.png" alt="在这里插入图片描述"></p>
+<h3><a id="6__225"></a>6. 客户端连接</h3>
+<p>（1）navicat连接OceanBase<br>
+能连mysql的客户端都可以连接OceanBase,只不过端口号需要换成2881<br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/7f1dcea3b8278571c8f9823862a01e62.png" alt="在这里插入图片描述"><br>
+（2）SQLyog连接OceanBase<br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/b1b796a30102bb96e627222da6ca3ab3.png" alt="在这里插入图片描述"><br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/b27334d9c96d15b45bfe397ab3617ece.png" alt="在这里插入图片描述"><br>
+（3）heidisql连接OceanBase</p>
+<p><img src="https://i-blog.csdnimg.cn/blog_migrate/2370a05508ca2747f757b6076ea1c125.png" alt="在这里插入图片描述"><br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/c463d40d71f8d0bbfe53a7128a3be1ee.png" alt="在这里插入图片描述"><br>
+（4）OceanBase Developer Center连接OceanBase<br>
+odc客户端是OceanBase官方图形化客户端<br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/341053610020252e5d7a7a1b6ffca21d.png" alt="在这里插入图片描述"><br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/b8583b2c5e33fab2cb64cd4755ee399b.png" alt="在这里插入图片描述"><br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/113034d4e6d043be9f739a5a2befcf39.png" alt="在这里插入图片描述"><br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/426b91d9b8f9243212b49719f29af13a.png" alt="在这里插入图片描述"><br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/2f2cca3fe90dfb769d2d4466e0ed41be.png" alt="在这里插入图片描述"></p>
+<h3><a id="7OceanBase_247"></a>7.OceanBase服务相关命令</h3>
+<pre><code>Usage: obd cluster &lt;command&gt; [options]
+
+Available commands:
+
+使用简单配置文件自动部署集群
+autodeploy     Deploy a cluster automatically by using a simple configuration file.
+
+check4ocp      Check Whether OCP Can Take Over Configurations in Use
+
+chst           Change Deployment Configuration Style
+
+部署一个集群
+deploy         Deploy a cluster by using the current deploy configuration or a deploy yaml file.
+
+销毁部署的集群
+destroy        Destroy a deployed cluster.
+
+显示集群信息
+display        Display the information for a cluster.
+
+编辑配置文件
+edit-config    Edit the configuration file for a specific deployment.
+
+列表查询所有部署的集群
+list           List all the deployments.
+
+重启部署一个已经启动的集群
+redeploy       Redeploy a started cluster.
+
+重新安装部署组件
+reinstall      Reinstall a deployed component
+
+重载一个已经启动的集群
+reload         Reload a started cluster.
+
+重启集群
+restart        Restart a started cluster.
+
+启动集群
+start          Start a deployed cluster.
+
+关闭停止运行集群
+stop           Stop a started cluster.
+
+tenant         Create or drop a tenant.
+
+upgrade        Upgrade a cluster.
+
+</code></pre>
+<h3><a id="8_300"></a>8.删除集群</h3>
+<p><em>确认集群不再需要后方可删除！！！</em></p>
+<pre><code class="prism language-java"><span class="token punctuation">[</span>root<span class="token annotation punctuation">@localhost</span> <span class="token operator">~</span><span class="token punctuation">]</span># obd cluster list
+<span class="token operator">+</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">+</span>
+<span class="token operator">|</span>                             <span class="token class-name">Cluster</span> <span class="token class-name">List</span>                             <span class="token operator">|</span>
+<span class="token operator">+</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">+</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">-</span><span class="token operator">+</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">-</span><span class="token operator">+</span>
+<span class="token operator">|</span> <span class="token class-name">Name</span>           <span class="token operator">|</span> <span class="token class-name">Configuration</span> <span class="token class-name">Path</span>                <span class="token operator">|</span> <span class="token class-name">Status</span> <span class="token punctuation">(</span><span class="token class-name">Cached</span><span class="token punctuation">)</span> <span class="token operator">|</span>
+<span class="token operator">+</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">+</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">-</span><span class="token operator">+</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">-</span><span class="token operator">+</span>
+<span class="token operator">|</span> demo           <span class="token operator">|</span> <span class="token operator">/</span>root<span class="token operator">/</span><span class="token punctuation">.</span>obd<span class="token operator">/</span>cluster<span class="token operator">/</span>demo           <span class="token operator">|</span> destroyed       <span class="token operator">|</span>
+<span class="token operator">|</span> oceanbase<span class="token operator">-</span>jamy <span class="token operator">|</span> <span class="token operator">/</span>root<span class="token operator">/</span><span class="token punctuation">.</span>obd<span class="token operator">/</span>cluster<span class="token operator">/</span>oceanbase<span class="token operator">-</span>jamy <span class="token operator">|</span> running         <span class="token operator">|</span>
+<span class="token operator">|</span> oceanbase<span class="token operator">-</span>song <span class="token operator">|</span> <span class="token operator">/</span>root<span class="token operator">/</span><span class="token punctuation">.</span>obd<span class="token operator">/</span>cluster<span class="token operator">/</span>oceanbase<span class="token operator">-</span>song <span class="token operator">|</span> stopped         <span class="token operator">|</span>
+<span class="token operator">+</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">+</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">-</span><span class="token operator">+</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">-</span><span class="token operator">+</span>
+<span class="token punctuation">[</span>root<span class="token annotation punctuation">@localhost</span> <span class="token operator">~</span><span class="token punctuation">]</span># obd cluster stop oceanbase<span class="token operator">-</span>song
+<span class="token class-name">Get</span> local repositories ok
+<span class="token class-name">Search</span> plugins ok
+<span class="token class-name">Open</span> ssh connection ok
+<span class="token class-name">Stop</span> prometheus ok
+<span class="token class-name">Stop</span> obagent ok
+<span class="token class-name">Stop</span> observer ok
+<span class="token class-name">Stop</span> grafana ok
+oceanbase<span class="token operator">-</span>song stopped
+<span class="token class-name">Trace</span> <span class="token constant">ID</span><span class="token operator">:</span> ef1b9ff2<span class="token operator">-</span><span class="token number">1d</span>f0<span class="token operator">-</span><span class="token number">11</span>ee<span class="token operator">-</span>a4e5<span class="token operator">-</span><span class="token number">000</span>c291d4602
+<span class="token class-name">If</span> you want <span class="token keyword">to</span> <span class="token namespace">view</span> detailed obd logs<span class="token punctuation">,</span> please run<span class="token operator">:</span> obd display<span class="token operator">-</span>trace ef1b9ff2<span class="token operator">-</span><span class="token number">1d</span>f0<span class="token operator">-</span><span class="token number">11</span>ee<span class="token operator">-</span>a4e5<span class="token operator">-</span><span class="token number">000</span>c291d4602
+<span class="token punctuation">[</span>root<span class="token annotation punctuation">@localhost</span> <span class="token operator">~</span><span class="token punctuation">]</span># obd cluster destroy oceanbase<span class="token operator">-</span>song
+<span class="token class-name">Get</span> local repositories ok
+<span class="token class-name">Search</span> plugins ok
+<span class="token class-name">Open</span> ssh connection ok
+<span class="token class-name">Cluster</span> status check ok
+prometheus work dir cleaning ok
+obagent work dir cleaning ok
+observer work dir cleaning ok
+grafana work dir cleaning ok
+oceanbase<span class="token operator">-</span>song destroyed
+<span class="token class-name">Trace</span> <span class="token constant">ID</span><span class="token operator">:</span> <span class="token number">42585</span>b2e<span class="token operator">-</span><span class="token number">1d</span>f1<span class="token operator">-</span><span class="token number">11</span>ee<span class="token operator">-</span>a3e6<span class="token operator">-</span><span class="token number">000</span>c291d4602
+<span class="token class-name">If</span> you want <span class="token keyword">to</span> <span class="token namespace">view</span> detailed obd logs<span class="token punctuation">,</span> please run<span class="token operator">:</span> obd display<span class="token operator">-</span>trace <span class="token number">42585</span>b2e<span class="token operator">-</span><span class="token number">1d</span>f1<span class="token operator">-</span><span class="token number">11</span>ee<span class="token operator">-</span>a3e6<span class="token operator">-</span><span class="token number">000</span>c291d4602
+<span class="token punctuation">[</span>root<span class="token annotation punctuation">@localhost</span> <span class="token operator">~</span><span class="token punctuation">]</span># obd cluster list
+<span class="token operator">+</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">+</span>
+<span class="token operator">|</span>                             <span class="token class-name">Cluster</span> <span class="token class-name">List</span>                             <span class="token operator">|</span>
+<span class="token operator">+</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">+</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">-</span><span class="token operator">+</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">-</span><span class="token operator">+</span>
+<span class="token operator">|</span> <span class="token class-name">Name</span>           <span class="token operator">|</span> <span class="token class-name">Configuration</span> <span class="token class-name">Path</span>                <span class="token operator">|</span> <span class="token class-name">Status</span> <span class="token punctuation">(</span><span class="token class-name">Cached</span><span class="token punctuation">)</span> <span class="token operator">|</span>
+<span class="token operator">+</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">+</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">-</span><span class="token operator">+</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">-</span><span class="token operator">+</span>
+<span class="token operator">|</span> demo           <span class="token operator">|</span> <span class="token operator">/</span>root<span class="token operator">/</span><span class="token punctuation">.</span>obd<span class="token operator">/</span>cluster<span class="token operator">/</span>demo           <span class="token operator">|</span> destroyed       <span class="token operator">|</span>
+<span class="token operator">|</span> oceanbase<span class="token operator">-</span>jamy <span class="token operator">|</span> <span class="token operator">/</span>root<span class="token operator">/</span><span class="token punctuation">.</span>obd<span class="token operator">/</span>cluster<span class="token operator">/</span>oceanbase<span class="token operator">-</span>jamy <span class="token operator">|</span> running         <span class="token operator">|</span>
+<span class="token operator">|</span> oceanbase<span class="token operator">-</span>song <span class="token operator">|</span> <span class="token operator">/</span>root<span class="token operator">/</span><span class="token punctuation">.</span>obd<span class="token operator">/</span>cluster<span class="token operator">/</span>oceanbase<span class="token operator">-</span>song <span class="token operator">|</span> destroyed       <span class="token operator">|</span>
+<span class="token operator">+</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">+</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">-</span><span class="token operator">+</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">-</span><span class="token operator">+</span>
+<span class="token punctuation">[</span>root<span class="token annotation punctuation">@localhost</span> <span class="token operator">/</span><span class="token punctuation">]</span># cd <span class="token operator">/</span>root<span class="token operator">/</span><span class="token punctuation">.</span>obd<span class="token operator">/</span>cluster
+<span class="token punctuation">[</span>root<span class="token annotation punctuation">@localhost</span> cluster<span class="token punctuation">]</span># ls
+demo  oceanbase<span class="token operator">-</span>jamy  oceanbase<span class="token operator">-</span>song
+<span class="token punctuation">[</span>root<span class="token annotation punctuation">@localhost</span> cluster<span class="token punctuation">]</span># rm <span class="token operator">-</span>rf demo
+<span class="token punctuation">[</span>root<span class="token annotation punctuation">@localhost</span> cluster<span class="token punctuation">]</span># rm <span class="token operator">-</span>rf oceanbase<span class="token operator">-</span>song
+<span class="token punctuation">[</span>root<span class="token annotation punctuation">@localhost</span> cluster<span class="token punctuation">]</span># obd cluster list
+<span class="token operator">+</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">+</span>
+<span class="token operator">|</span>                             <span class="token class-name">Cluster</span> <span class="token class-name">List</span>                             <span class="token operator">|</span>
+<span class="token operator">+</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">+</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">-</span><span class="token operator">+</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">-</span><span class="token operator">+</span>
+<span class="token operator">|</span> <span class="token class-name">Name</span>           <span class="token operator">|</span> <span class="token class-name">Configuration</span> <span class="token class-name">Path</span>                <span class="token operator">|</span> <span class="token class-name">Status</span> <span class="token punctuation">(</span><span class="token class-name">Cached</span><span class="token punctuation">)</span> <span class="token operator">|</span>
+<span class="token operator">+</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">+</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">-</span><span class="token operator">+</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">-</span><span class="token operator">+</span>
+<span class="token operator">|</span> oceanbase<span class="token operator">-</span>jamy <span class="token operator">|</span> <span class="token operator">/</span>root<span class="token operator">/</span><span class="token punctuation">.</span>obd<span class="token operator">/</span>cluster<span class="token operator">/</span>oceanbase<span class="token operator">-</span>jamy <span class="token operator">|</span> running         <span class="token operator">|</span>
+<span class="token operator">+</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">+</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">-</span><span class="token operator">+</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">--</span><span class="token operator">-</span><span class="token operator">+</span>
+<span class="token class-name">Trace</span> <span class="token constant">ID</span><span class="token operator">:</span> <span class="token number">7886</span>c5cc<span class="token operator">-</span><span class="token number">1d</span>f2<span class="token operator">-</span><span class="token number">11</span>ee<span class="token operator">-</span>a16d<span class="token operator">-</span><span class="token number">000</span>c291d4602
+<span class="token class-name">If</span> you want <span class="token keyword">to</span> <span class="token namespace">view</span> detailed obd logs<span class="token punctuation">,</span> please run<span class="token operator">:</span> obd display<span class="token operator">-</span>trace <span class="token number">7886</span>c5cc<span class="token operator">-</span><span class="token number">1d</span>f2<span class="token operator">-</span><span class="token number">11</span>ee<span class="token operator">-</span>a16d<span class="token operator">-</span><span class="token number">000</span>c291d4602
+
+</code></pre>
+<h3><a id="9ODCwebdocker_363"></a>9.部署ODC的web端服务(docker容器部署)</h3>
+<p>这里部署ODC的web端服务是使用官网推荐的docker镜像启动docker容器（web容器）<br>
+（1）安装docker<br>
+<a href="https://jamysong.gitee.io/dockerUse.html">docker安装参考这里教程，根据自己Linux的版本选择性安装</a></p>
+<p>（2）拉取odc的docker镜像</p>
+<pre><code class="prism language-linux">docker pull oceanbase/odc:4.2.2
+</code></pre>
+<p>（3）创建挂载目录</p>
+<pre><code class="prism language-linux">mkdir -p /var/log/odc  /var/data/odc
+</code></pre>
+<p>（4）启动容器</p>
+<pre><code class="prism language-linux">docker run -v /var/log/odc:/opt/odc/log   -v /var/data/odc:/opt/odc/data \
+-d -i --net host --cpu-period 100000 --cpu-quota 400000 --memory 6G --name "obodc" \
+-e "DATABASE_HOST=192.168.225.49" \
+-e "DATABASE_PORT=2888" \
+-e "DATABASE_USERNAME=jamy@sys" \
+-e "DATABASE_PASSWORD=123456" \
+-e "DATABASE_NAME=odc_oceanbase" \
+-e "ODC_PROFILE_MODE=alipay" \
+-e "ODC_ADMIN_INITIAL_PASSWORD=ACbc214325%#@" \
+oceanbase/odc:4.2.2
+</code></pre>
+<p><em>说明：<br>
+–net host  共享宿主机的网络<br>
+–memory  设置docker容器内存的最大使用内存（根据你内存大小的实际情况，但是不能太小）<br>
+DATABASE_HOST   设置你的Oeacanbase数据库的IP地址<br>
+DATABASE_PORT   设置你的Oeacanbase数据库的端口号<br>
+DATABASE_USERNAME   设置你的Oeacanbase数据库的用户（格式是 用户名@租户名#集群名）<br>
+DATABASE_PASSWORD   设置你的Oeacanbase数据库的用户密码（这里就是用户jamy的密码）<br>
+DATABASE_NAME   设置ODC的web端连接的Oeacanbase数据库名，如果该数据库不存在，需要先创建<br>
+ODC_PROFILE_MODE   默认为alipay<br>
+ODC_ADMIN_INITIAL_PASSWORD    这个就是你首次访问ODC的web端的登录密码，登录用户名默认为admin</em></p>
+<p>（）访问ODC的web版<br>
+这里搭建的ODC的web版非常适用于团队使用，只要登录浏览器就可以访问，启动容器显示如下，表示服务搭建成功<br>
+访问地址：http://容器所在的宿主机:8989<br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/07ced2fb4f59c37a10d83ba6efa507f2.png" alt="在这里插入图片描述"><br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/ee841f877cc5e5bce4b436a55f1dbaf8.png" alt="在这里插入图片描述"><br>
+团队空间<br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/b228ec93be498fb34d0e541f459ce139.png" alt="在这里插入图片描述"><br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/e03a668d65703db00b4557206ccbc005.png" alt="在这里插入图片描述"><br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/b8c738509d67495ce596a82268dce14c.png" alt="在这里插入图片描述"><br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/c33504102cec134cc44de5ea59f6fca5.png" alt="在这里插入图片描述"><br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/248c9404247f72a46cd6f338573fe9ea.png" alt="在这里插入图片描述"></p>
+<p><img src="https://i-blog.csdnimg.cn/blog_migrate/9d4f6147fb7be6f9b619f49ebbc230d9.png" alt="在这里插入图片描述"><br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/3a0cac83bd30c30b8d19369c380339cb.png" alt="在这里插入图片描述"><br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/2bb31884fd4ee3d63d35f444abc2201a.png" alt="在这里插入图片描述"><br>
+个人空间<br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/d981007901492c4d9696f871a8642fd0.png" alt="在这里插入图片描述"><br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/c13015d1d5b26dbb22c92aeae1e7bddd.png" alt="在这里插入图片描述"><br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/91bc9a4ec864bca704408c90776db180.png" alt="在这里插入图片描述"><br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/f4faa79a873bd9b9d8c7b34f56ae6214.png" alt="在这里插入图片描述"><br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/1f86b0286c8208841ca53dc70e7f216b.png" alt="在这里插入图片描述"><br>
+选择表查看表结构<br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/eec9810b41955cb6b0c9cd3c689a7bce.png" alt="在这里插入图片描述"><br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/ad08560162bc46948d7d8a3b4f2b4352.png" alt="在这里插入图片描述"><br>
+选择表查看表数据<br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/ace93d9f5a422bcb8c6e223d03df1316.png" alt="在这里插入图片描述"><br>
+打开sql查询窗口<br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/d082d92d1aa3db06214c7ee0f26e5ba6.png" alt="在这里插入图片描述"><br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/1b9a639a76604e7d2a10c8d1f3e67af7.png" alt="在这里插入图片描述"></p>
+<h3><a id="10ODCweblinux_433"></a>10.部署ODC的web端服务(直接在linux下部署)</h3>
+<p>ODC的web客户端是使用Java编写的，所以需要在Linux安装jdk,版本为1.8</p>
+<p>（1）配置环境变量<br>
+vim /etc/profile,在文件末尾添加如下内容后执行source  /etc/profie使得新的环境变量生效</p>
+<pre><code>export ODC_JVM_TRY_USE_JDK=1
+export ODC_ADMIN_INITIAL_PASSWORD=ACbc214325%#@
+export ODC_PROFILE_MODE=alipay
+export DATABASE_PORT=2888
+export DATABASE_NAME=odc_oceanbase
+export DATABASE_USERNAME=jamy@sys
+export DATABASE_HOST=192.168.225.49
+export DATABASE_PASSWORD=123456
+export OLDPWD=/opt/odc
+</code></pre>
+<p>（2）创建数据库<br>
+在连接的数据库创建odc_oceanbase,建库语句如下：</p>
+<pre><code>CREATE DATABASE odc_oceanbase DEFAULT CHARSET utf8mb4;
+</code></pre>
+<p>（3）将odc-web.zip压缩包解压到/opt目录下即可（odc-web.zip如果有需要可以@我）<br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/de3b2d125408fcc74235b4ccb0a9657d.png" alt="在这里插入图片描述"><br>
+（4）启动odc,执行如下命令<br>
+cd  /opt/odc/bin/<br>
+sh start-odc.sh   (直接在当前窗口运行，窗口关了，odc也就停止运行了)<br>
+或者<br>
+sh  nohup-start-odc.sh   (后台运行，适合长期运行服务)</p>
+<p><img src="https://i-blog.csdnimg.cn/blog_migrate/b1db387798842ac4c31ff76867a3e44a.png" alt="在这里插入图片描述"></p>
+<p>如何确定启动是否成功<br>
+一是执行命令ps -ef|grep java查看服务进程<br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/807404d936dfec5cacee9f7a30c56d93.png" alt="在这里插入图片描述"><br>
+二是查看日志<br>
+tail -10f  /opt/odc/log/odc.log<br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/96250f20d558d6dafbc57898e17b18b2.png" alt="在这里插入图片描述"></p>
+<p><em>注意：odc使用java编写，所以必须安装jdk才能使用，openjdk也可以，版本是1.8</em></p>
+<p>（5）连接web客户端<br>
+登录地址：http://部署odc的Linux的IP地址:端口号,端口号也是可以在环境变量里设置的，默认是8989，我这里的访问地址是192.168.225.68:8989,<br>
+登录用户是admin<br>
+密码就是（1）中设置的ACbc214325%#@，密码设置规则如下，这是设置的密码不符合密码规则的提示,登录成功后可以修改，但也要符合密码约束规则，下面有一个修改的截图<br>
+登录进去具体操作大家可以自己研究研究，这里不做过多讲述。</p>
+<pre><code>Bean create failed, beanName=odcServer, message=Error creating bean with name 'odcServer': Unsatisfied dependency expressed through constructor parameter 0; nested exception is org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'metadbMigrate': Invocation of init method failed; nested exception is java.lang.IllegalArgumentException: Illegal password, please check your password, 
+a valid password should:
+1. has length between 8~32;
+2. contains at least 2 number;
+3. contains at least 2 alpha;
+4. contains at least 2 special character(._+@#$%);
+</code></pre>
+<p><img src="https://i-blog.csdnimg.cn/blog_migrate/3f7b1eb060b8e32faa8e22fd8767b5bd.png" alt="在这里插入图片描述"></p>
+<p><img src="https://i-blog.csdnimg.cn/blog_migrate/6c9ebbd5dad929b7278e4d3669161340.png" alt="在这里插入图片描述"><br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/493d8b46ab9a174129fe10967e4a60c9.png" alt="在这里插入图片描述"></p>
+
+    </div>
+  </div>
+</body>
+
+</html>

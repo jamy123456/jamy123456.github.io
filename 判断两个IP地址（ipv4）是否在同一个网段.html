@@ -1,0 +1,103 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="referrer" content="no-referrer">
+  <title>判断两个IP地址（ipv4）是否在同一个网段</title>
+  <link rel="stylesheet" href="https://stackedit.io/style.css" />
+</head>
+
+<body class="stackedit">
+  <div class="stackedit__left">
+    <div class="stackedit__toc">
+      
+    </div>
+  </div>
+  <div class="stackedit__right">
+    <div class="stackedit__html">
+      <p>我们通常会遇到的ip地址是这样的：<br>
+ip地址：192.168.227.205   子网掩码：255.255.255.0<br>
+ip地址：192.168.226.202   子网掩码：255.255.255.0</p>
+<pre><code>192.168.227.205转化为二进制：
+11000000  10101000   11100011   11001101
+ 255.255.255.0子网掩码转化为二进制：
+ 11111111    11111111   11111111     00000000
+ 两者进行与运算得到如下二进制值：
+ 11000000   10101000   11100011   00000000
+ 转为二进制得到网段：
+ 192.168.227.0
+
+192.168.226.202转化为二进制：
+11000000  10101000   11100010   11001010
+ 255.255.255.0子网掩码转化为二进制：
+ 11111111    11111111   11111111     00000000
+ 两者进行与运算得到如下二进制值：
+11000000   10101000   11100010   00000000
+转为二进制得到网段：
+192.168.226.0
+
+结果：
+很显然192.168.227.0和192.168.226.0不是一个网段，所以他们之间是ping不通的即不能相互通信
+</code></pre>
+<p>下面我们把子网掩码换成255.255.252.0再来判断下：<br>
+ip地址：192.168.227.205   子网掩码：255.255.252.0<br>
+ip地址：192.168.226.202   子网掩码：255.255.252.0</p>
+<pre><code>192.168.227.205转化为二进制：
+11000000  10101000   11100011   11001101
+ 255.255.252.0子网掩码转化为二进制：
+ 11111111    11111111   11111100     00000000
+ 两者进行与运算得到如下二进制值：
+ 11000000   10101000   11100000   00000000
+ 转为二进制得到网段：
+ 192.168.224.0
+
+192.168.226.202转化为二进制：
+11000000  10101000   11100010   11001010
+ 255.255.255.0子网掩码转化为二进制：
+ 11111111    11111111   11111100     00000000
+ 两者进行与运算得到如下二进制值：
+11000000   10101000   11100000   00000000
+转为二进制得到网段：
+192.168.224.0
+
+结果：
+很显然这次他们是在同一个网段，所以他们之间是可以ping通的即能相互通信
+</code></pre>
+<p><strong>结论：</strong><br>
+<em>所以判断两个ip是不是在同一个网段要结合ip本身和子网掩码才能判断。<br>
+通常情况下我们子网掩码是255.255.255.0（一个数字表示：24）的时候只要看前三段，如果相同即在同一个网段，子网掩码是255.255.252.0(一个数自表示：22)，就不能看前三段了，需要通过上述方法计算一下，其他子网掩码，大家有兴趣也可以算一下。</em></p>
+<pre><code>比如我这里使用NAT网络模式：
+主机ip地址设置成192.168.224.88，子网掩码是255.255.252.0,在虚拟机装系统时候，只要虚拟机系统ip的地址的前三段是192.168.224、192.168.225、192.168.226、192.168.227的（ip最后一段自己随便定义，0和255不能写，网关排除外），那么它们都是在同一个网段的，即可以相互通信，也可以访问外网！！！
+</code></pre>
+<p>下面是我自己的IP设置截图，仅供参考：<br>
+宿主机VMnet8 ipv4设置<br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/01beffb9ceed011981eb6499dc6afc23.png" alt="在这里插入图片描述"><br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/ae3d056b154295fbbddddc913f05cdd4.png" alt="在这里插入图片描述"><br>
+VMware虚拟机设置如下：<br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/49f0ced71ac7f684ff70dc2633720db9.png" alt="在这里插入图片描述"><br>
+下面来测试192.168.224.x，192.168.225.x，192.168.226.x，192.168.227.x几个相互之间ping通测试：<br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/eef4091f9932070f528e92ccd4a1c7cf.png" alt="在这里插入图片描述"></p>
+<p><img src="https://i-blog.csdnimg.cn/blog_migrate/9fae23e7f64057b68e0c713e7ab7151b.png" alt="在这里插入图片描述"><br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/36bd1484c9741de7bc502468d5e23cae.png" alt="在这里插入图片描述"><br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/62ebc1e507bec5d01a5f32c63de3d506.png" alt="在这里插入图片描述"><br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/cfbb49a029e3e5c3b4988b234873a7fa.png" alt="在这里插入图片描述"><br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/cea3d8eb5e23598743d8e987ac16c672.png" alt="在这里插入图片描述"><br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/4dcd840a46d7e0dea46390483a67da54.png" alt="在这里插入图片描述"><br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/a81352137ce87077d6f9d4bf1265be3f.png" alt="在这里插入图片描述"><br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/6fce2087e59211ed0ccdbb59696a397d.png" alt="在这里插入图片描述"><br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/7e018a1d766e3f24e4af505c966b9685.png" alt="在这里插入图片描述"><br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/bb87f96199cbc48c3d1e938aef4f2a3b.png" alt="在这里插入图片描述"><br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/f053649d6d2da66a7f7d8f4e5623f659.png" alt="在这里插入图片描述"><br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/948402e4e5027100bb54110b1a87083d.png" alt="在这里插入图片描述"><br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/6746990ea37c0e4757e589593b6b1dc8.png" alt="在这里插入图片描述"><br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/a556ad9c7c0ead1e8a9e2aaad62f3263.png" alt="在这里插入图片描述"></p>
+<p><img src="https://i-blog.csdnimg.cn/blog_migrate/4aed8e12a727d9a08d2952a0537fc2a9.png" alt="在这里插入图片描述"><br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/c0ef0849806a72711785cc2e2f92724a.png" alt="在这里插入图片描述"></p>
+
+    </div>
+  </div>
+</body>
+
+</html>

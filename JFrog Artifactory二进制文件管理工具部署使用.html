@@ -1,0 +1,117 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="referrer" content="no-referrer">
+  <title>JFrog Artifactory二进制文件管理工具部署使用</title>
+  <link rel="stylesheet" href="https://stackedit.io/style.css" />
+</head>
+
+<body class="stackedit">
+  <div class="stackedit__left">
+    <div class="stackedit__toc">
+      
+<ul>
+<li>
+<ul>
+<li></li>
+</ul>
+</li>
+</ul>
+
+    </div>
+  </div>
+  <div class="stackedit__right">
+    <div class="stackedit__html">
+      <p></p><div class="toc"><h3>目录</h3><ul><ul><ul><li><a href="#1_2">1.简介</a></li><li><a href="#2_6">2.下载安装包</a></li><li><a href="#3__12">3. 安装</a></li><li><a href="#4__44">4. 使用</a></li></ul></ul></ul></div><p></p>
+<h3><a id="1_2"></a>1.简介</h3>
+<p>JFrog Artifactory二进制文件管理工具，目前已经在使用的公司有很多，足见他的方便好用。<br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/e074dc2eac22eacb9efa2dadedb310ec.png" alt="在这里插入图片描述"><br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/39f35ae91dca807e60fd0641b56434d9.png" alt=""></p>
+<h3><a id="2_6"></a>2.下载安装包</h3>
+<p><a href="https://releases.jfrog.io/artifactory/bintray-artifactory/org/artifactory/oss/jfrog-artifactory-oss/">点击下载地址</a><br>
+这里我下载的是7.9.2版本<br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/17febc9e404ce7434235f30be71baa53.png" alt="在这里插入图片描述"><br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/671367cd3016e8ea3e671e5ced0ab7b1.png" alt="在这里插入图片描述"></p>
+<h3><a id="3__12"></a>3. 安装</h3>
+<p>（1）在安装JFrog Artifactory之前需要安装好jdk（需要1.8版本以及上即可），在Linux执行java -version检查下安装环境是否已安装好jdk<br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/911f14ac1ec53b786552180a2c550ac0.png" alt="在这里插入图片描述"><br>
+(2) 上传下载的二进制压缩包jfrog-artifactory-oss-7.9.2-linux.tar.gz到Linux的/opt目录下,并解压</p>
+<pre><code>cd /opt
+tar -zxvf jfrog-artifactory-oss-7.9.2-linux.tar.gz
+mv artifactory-oss-7.9.2 jfrog_artifactory
+</code></pre>
+<p><img src="https://i-blog.csdnimg.cn/blog_migrate/311910f5a0db08830d06feed3cc58ae7.png" alt="在这里插入图片描述"><br>
+(3)进入/opt/jfrog_artifactory/app/bin目录，然后启动jfrog artifactory<br>
+./artifactoryctl  命令参数</p>
+
+<table>
+<thead>
+<tr>
+<th>命令参数</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>start</td>
+<td>启动运行</td>
+</tr>
+<tr>
+<td>stop</td>
+<td>停止运行</td>
+</tr>
+<tr>
+<td>restart</td>
+<td>重启运行</td>
+</tr>
+<tr>
+<td>status</td>
+<td>查看运行状态</td>
+</tr>
+<tr>
+<td>check</td>
+<td>检查</td>
+</tr>
+</tbody>
+</table><pre><code>cd  /opt/jfrog_artifactory/app/bin
+./artifactoryctl start
+</code></pre>
+<p><img src="https://i-blog.csdnimg.cn/blog_migrate/74ca5d21f411f5ad9fadd2d4fcece208.png" alt="在这里插入图片描述"><br>
+看图表示已成功启动运行</p>
+<p>（4）浏览器访问<br>
+访问地址：http://部署的IP地址:端口号,默认端口号是8081，如果占用可以修改成其他端口号启动<br>
+例如：http://192.168.225.68:8081<br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/01a75627a92769a0c1bb43fc5e026b4d.png" alt="在这里插入图片描述"></p>
+<h3><a id="4__44"></a>4. 使用</h3>
+<p>首先登陆，用户名：admin   密码：password，登陆后需要修该密码。</p>
+<p><img src="https://i-blog.csdnimg.cn/blog_migrate/a46194ab32b743dda303749b70be3969.png" alt="在这里插入图片描述"><br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/5fdda65b57e612c9034fa64a7c7ecebd.png" alt="在这里插入图片描述"><img src="https://i-blog.csdnimg.cn/blog_migrate/2e09521e7e7239687f67aa84b0395332.png" alt="在这里插入图片描述"><br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/f153ee7657f69e9b9dd4cf2c77b3c17c.png" alt="在这里插入图片描述"><br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/866d3e390a1843ce6774f1fd12537786.png" alt="在这里插入图片描述"><br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/45e3e753dba7a76634001977209bad3c.png" alt="在这里插入图片描述"><br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/f0435d00e815fa8ba51cdfd7d62650ed.png" alt="在这里插入图片描述"><br>
+修改上传文件大小的限制，默认限制100M,改为0就是无限制<br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/b35243c3358b3ce203ad105cde2bccd8.png" alt="在这里插入图片描述"><br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/c9e4e47d230fe61bdf3733fbed31883e.png" alt="在这里插入图片描述"><br>
+到此配置完成，可以使用了！！！<br>
+创建一个新库install_packages<br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/31acb7670ed4d570af88f1cb864d0ceb.png" alt="在这里插入图片描述"><br>
+选择新库类型<br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/e55f7fd27a46258b628608cc6f97df04.png" alt="在这里插入图片描述"><br>
+给新库命名<br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/2340f45596d06bdf14ff1839df7807ec.png" alt="在这里插入图片描述"><br>
+上传文件<br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/f05ab2e2682b310c21ed79d29ee6f57c.png" alt="在这里插入图片描述"><br>
+点击上传箭头或者把文件直接拖拽到这里都可以<br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/e5aa93bc603436e0989005dbc5693c09.png" alt="在这里插入图片描述"><br>
+上传的文件也可以下载使用<br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/81393cc263be5677c298e55857753dc7.png" alt="在这里插入图片描述"></p>
+
+    </div>
+  </div>
+</body>
+
+</html>

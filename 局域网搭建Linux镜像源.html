@@ -1,0 +1,155 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="referrer" content="no-referrer">
+  <title>局域网搭建Linux镜像源</title>
+  <link rel="stylesheet" href="https://stackedit.io/style.css" />
+</head>
+
+<body class="stackedit">
+  <div class="stackedit__left">
+    <div class="stackedit__toc">
+      
+<ul>
+<li>
+<ul>
+<li></li>
+</ul>
+</li>
+</ul>
+
+    </div>
+  </div>
+  <div class="stackedit__right">
+    <div class="stackedit__html">
+      <h2><a id="_0"></a>前言</h2>
+<p>一般情况在企业的局域网内，是不连接外网的，所以像阿里云这样的在线的镜像源就用不了，我相信大家个人在虚拟机里面连的就是阿里云镜像源了，而且局域网内服务器较多的话，本地挂载镜像源再来更新其实就不太方便了，这样搭建局域网镜像源就非常适合这样的场景使用了，据我所知，有一些公司确实就是这么干的，好了废话就不说了，开干,本次部署镜像源的linux环境是centos8.5！！！</p>
+<h3><a id="1_httpd_3"></a>1. 安装httpd网页服务器</h3>
+<pre><code>安装apache的web服务器执行以下命令安装
+yum install -y httpd
+或者是直接在Apache官网下载离线安装包安装也可
+安装好Apache后查看/var这个目录
+cd /var/www/html
+pwd
+会看到/var/www/html/这个子文件夹，我们的镜像就放在这个下面，先创建个linux
+mkdir linux
+接下来我们在linux目录下创建这些目录: redhat7,redhat8,redhat9,suse12,suse15,suse15sp4
+mkdir redhat7  redhat8  redhat9  suse12  suse15  suse15sp4
+然后就在各自的文件下存放各自对应版本的镜像就行了
+</code></pre>
+<p><a href="http://archive.apache.org/dist/httpd/">httpd下载地址</a><br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/5c853e5be9e8161e89fa17a2e5c5f2eb.png" alt="在这里插入图片描述"><br>
+我这里安装的是httpd-2.4.37版<br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/f5ca2783c0b12be93a9a53c1239eb528.png" alt="在这里插入图片描述"></p>
+<h3><a id="2__23"></a>2. 系统环境设置</h3>
+<pre><code>（1）放行80端口
+firewall-cmd  --permanent  --zone=public  --add-port=80/tcp
+
+（2）禁用selinux
+vim /etc/selinux/config
+将SELINUX=enforcing修改成SELINUX=disabled
+
+（3）重启系统
+init 0或者是reboot
+</code></pre>
+<p><em>注意：做以上操作是为了在局域网内的其他服务器系统可以成功访问这台服务器的Apache服务器目录下的静态资源，必须要做的，否则即使镜像源搭建成功，也不能访问</em></p>
+<h3><a id="3__39"></a>3. 放置镜像包</h3>
+<p>我这里直接将镜像挂载到VMware虚拟机上，实体机可以使用U盘来拷贝镜像（这里说的镜像是完整版的系统安装镜像）<br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/9f72c3b6ccfc2fb54bb6a78053caa477.png" alt="在这里插入图片描述"></p>
+<pre><code>然后执行下面命令挂载iso系统镜像,显示如下图表示挂载成功
+mount /dev/sr0  /media
+</code></pre>
+<p><img src="https://i-blog.csdnimg.cn/blog_migrate/0e45fb6d88f65600ecd3ab2f8888e4be.png" alt="在这里插入图片描述"></p>
+<pre><code>然后可以来到media目录看看挂载的内容,确实和系统安装iso镜像里面的内容一样，后面部署完成后，在浏览器访问也是这样内容
+cd /media
+ls -la
+</code></pre>
+<p><img src="https://i-blog.csdnimg.cn/blog_migrate/d85013c8b92835a9bc6ba753ada78395.png" alt="在这里插入图片描述"></p>
+<pre><code>紧接着我们把当前目录下redhat7.0系统安装镜像的的全部内容复制到/var/www/html/linux/redhat7目录下,其他的镜像都按照这个步骤操作即可
+cp -R /media/*  /var/www/html/linux/redhat7/
+</code></pre>
+<p><img src="https://i-blog.csdnimg.cn/blog_migrate/df7852bc61b54c52a5b5b77654d1cf7e.png" alt="在这里插入图片描述"></p>
+<h3><a id="4__67"></a>4. 测试部署的局域网镜像源</h3>
+<p>待需要的镜像全部放置完成后，我们在浏览器上访问看看，<br>
+访问路径：http://192.168.224.4/linux/,，访问的ip地址就是你镜像存放的服务器ip地址，如下图所示，是不是和网上阿里云或是网易他们的差不多呢。。。<br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/8d922d841b245ec10633fbffb134064b.png" alt="在这里插入图片描述"></p>
+<p><img src="https://i-blog.csdnimg.cn/blog_migrate/07fbffb82c557fa107c0b6a372ec3261.png" alt="在这里插入图片描述"><br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/5a54a268c84f871a9ff3f1bdd41018ad.png" alt="在这里插入图片描述"><br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/2c8db8f2bab22622bb76395b0264b19d.png" alt="在这里插入图片描述"><br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/e38f4e20e35c468053c18ef30244bac3.png" alt="在这里插入图片描述"><br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/7abe54f747def8f2ba29fc3de784eacf.png" alt="在这里插入图片描述"><br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/e3a5dc9bf9692b9263cb1c0d90d8e47b.png" alt="在这里插入图片描述"></p>
+<p>我这拿suse15sp4试一下看看</p>
+<p>cd /etc/zypp/repos.d<br>
+vim SUSE15.repo<br>
+添加如下内容：</p>
+<pre><code>[Module-Basesystem]
+enabled=1
+autorefresh=0
+baseurl=http://192.168.224.4/linux/suse15sp4/Module-Basesystem
+
+[Module-Containers]
+enabled=1
+autorefresh=0
+baseurl=http://192.168.224.4/linux/suse15sp4/Module-Containers
+
+
+[Module-Desktop-Applications]
+enabled=1
+autorefresh=0
+baseurl=http://192.168.224.4/linux/suse15sp4/Module-Desktop-Applications
+
+[Module-Development-Tools]
+enabled=1
+autorefresh=0
+baseurl=http://192.168.224.4/linux/suse15sp4/Module-Development-Tools
+
+[Module-HPC]
+enabled=1
+autorefresh=0
+baseurl=http://192.168.224.4/linux/suse15sp4/Module-HPC
+
+[Module-Legacy]
+enabled=1
+autorefresh=0
+baseurl=http://192.168.224.4/linux/suse15sp4/Module-Legacy
+
+[Module-Live-Patching]
+enabled=1
+autorefresh=0
+baseurl=http://192.168.224.4/linux/suse15sp4/Module-Live-Patching
+
+[Module-Public-Cloud]
+enabled=1
+autorefresh=0
+baseurl=http://192.168.224.4/linux/suse15sp4/Module-Public-Cloud
+
+[Module-SAP-Applications]
+enabled=1
+autorefresh=0
+baseurl=http://192.168.224.4/linux/suse15sp4/Module-SAP-Applications
+
+[Module-Server-Applications]
+enabled=1
+autorefresh=0
+baseurl=http://192.168.224.4/linux/suse15sp4/Module-Server-Applications
+</code></pre>
+<p>首先我们关掉镜像源服务器看看是是么情况，如下图所示，确实是访问我们搭建的局域网镜像源服务器了<br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/bcff9337fcc31a3f331d3e6edfe2fa1a.png" alt="在这里插入图片描述"><br>
+然后再来打开镜像源服务器看看看，如图所示，能够刷新镜像源<br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/0ad63fad7a62ba3ea0360ba25d48bfbc.png" alt="在这里插入图片描述"><br>
+现在来测试安装vim编辑器，<br>
+先卸载掉：<br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/4b118d55aee0cc4dd9cbda099df98535.png" alt="在这里插入图片描述"><br>
+再安装<br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/1d412f7922ccbf669595c10d0587e057.png" alt="在这里插入图片描述"><br>
+到此整个局域网的Linux镜像源搭建完成！！！</p>
+
+    </div>
+  </div>
+</body>
+
+</html>

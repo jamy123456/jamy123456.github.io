@@ -1,0 +1,99 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="referrer" content="no-referrer">
+  <title>虚拟机中Linux怎么与宿主机、外网通信</title>
+  <link rel="stylesheet" href="https://stackedit.io/style.css" />
+</head>
+
+<body class="stackedit">
+  <div class="stackedit__left">
+    <div class="stackedit__toc">
+      
+<ul>
+<li>
+<ul>
+<li></li>
+</ul>
+</li>
+</ul>
+
+    </div>
+  </div>
+  <div class="stackedit__right">
+    <div class="stackedit__html">
+      <p></p><div class="toc"><h3>目录</h3><ul><ul><ul><li><a href="#_1">前言</a></li><li><a href="#NAT_5">一、NAT模式</a></li><ul><li><a href="#1__8">1. 设置宿主机</a></li><li><a href="#2VMware_19">2.设置VMware虚拟机</a></li><li><a href="#3_Linux_27">3. 对虚拟机Linux进行设置</a></li><li><a href="#4_linux_35">4. 重启linux网络服务</a></li></ul><li><a href="#_44">二、桥接模式</a></li><ul><li><a href="#1_cmdIP_46">1. cmd命令行窗口查询IP地址</a></li><li><a href="#2_Linux_55">2. 设置Linux</a></li><li><a href="#3__59">3. 重启网卡服务</a></li></ul><li><a href="#only_host_66">三、only host模式</a></li><ul><li><a href="#1__68">1. 设置宿主机</a></li><li><a href="#2__71">2. 设置虚拟机</a></li><li><a href="#3_Linux_74">3. 修改虚拟机Linux的网络配置文件</a></li><li><a href="#4__78">4. 重启网卡服务</a></li></ul></ul></ul></ul></div><p></p>
+<h3><a id="_1"></a>前言</h3>
+<p>虚拟机中的Linux怎么与宿主机通信一般有三种方式：分别是NAT、桥接、only host;前面两种方式不仅能够让虚拟机中的Linux与宿主机通信而且还可以访问外网，only host从名字也可以看出它只能让虚拟机中Linux与宿主机通信，不能访问外网，下面就来接单介绍一下。</p>
+<h3><a id="NAT_5"></a>一、NAT模式</h3>
+<p>大多情况下本人喜欢这种模式，因为即使宿主机的IP地址发生变化，虚拟机中的Linux也不需要变更IP地址，要使用这种模式让虚拟机Linux与宿主机通信以及访问外网需要做以下这些：</p>
+<h4><a id="1__8"></a>1. 设置宿主机</h4>
+<p>在宿主机上安装完VMware软件后你的电脑多出这么两个东西，右击任务栏的网络图标 &gt;  打开网络和Internet设置 &gt; 单击网络和共享中心 &gt; 单击更改适配器设置，你会看到VMnet1和VMnet8,NAT模式是要来设置VMnet8<br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/bfd85d3a72a3555b30e5432cd21d08ca.png" alt="在这里插入图片描述"><br>
+选中VMnet8,右键选择属性<br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/b7fa81dbaf2569bfa67da9610c4f8d17.png" alt="在这里插入图片描述"><br>
+在弹出的VMnet8属性弹框中选择Internet协议版本4，然后单击属性按钮<br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/30751fe355197b8568f79bae8226fd7e.png" alt="在这里插入图片描述"><br>
+在弹出的internet协议版本4弹出框中做如下设置<br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/cedc5f679f43c75948be897b471ecfa1.png" alt="在这里插入图片描述"><br>
+到此宿主机设置完毕</p>
+<h4><a id="2VMware_19"></a>2.设置VMware虚拟机</h4>
+<p>首先打开虚拟机软件，安装好Linux（这里使用centos做例子说明）以后，单击虚拟机软件上的编辑按钮，然后单击虚拟网络编辑器<br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/4772c354c47d437ba440de11ad257f6a.png" alt="在这里插入图片描述"><br>
+在虚拟网络编辑器进行NAT设置如下，设置完成点击确定保存即可<br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/ddeebb7df0821783d038dd666777929a.png" alt="在这里插入图片描述"><br>
+在虚拟网络编辑器进行DHCP设置，设置完成点击确定保存即可<br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/7eda1a633c121cafefeb488dab9c4f2f.png" alt="在这里插入图片描述"><br>
+到此虚拟机软件设置完成</p>
+<h4><a id="3_Linux_27"></a>3. 对虚拟机Linux进行设置</h4>
+<p>这里使用的时centos系统进行设置，其他Linux发行版大同小异<br>
+使用Xshell连接上centos linux,或者你直接在虚拟机Linux操作也可以<br>
+首先执行cd /etc/sysconfig/network-scripts，进入此文件目录下<br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/7a0b55fe1c81f8f78c1b0d98442d7218.png" alt="在这里插入图片描述"><br>
+执行vim ifcfg-ens33，编辑vim ifcfg-ens33文件如下，然后保存更改<br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/9d343c478053a7dcb7da76f92673414a.png" alt="在这里插入图片描述"></p>
+<h4><a id="4_linux_35"></a>4. 重启linux网络服务</h4>
+<p>执行systemctl restart network重启网络服务，然后ping宿主机IP地址和百度网址，如下所示说明设置成功，Linux可以和宿主机以及外网通信了<br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/66a294594aabe08319f767fd3e6043dd.png" alt="在这里插入图片描述"></p>
+<h3><a id="_44"></a>二、桥接模式</h3>
+<p>桥接模式相对NAT模式，设置比较简单</p>
+<h4><a id="1_cmdIP_46"></a>1. cmd命令行窗口查询IP地址</h4>
+<p>执行ipconfig命令查询宿主机有线网络或无线网络IP地址<br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/6ca39ec6ebfa438e448101c33e8912f2.png" alt="在这里插入图片描述"><br>
+如下图所示找到桥接的网关地址和IP网段<br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/a019ddf4cd5210338580ddce709e898a.png" alt="在这里插入图片描述"><br>
+<em>注意：</em><br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/51256515cb4ed45faacb4795ade810d8.png" alt="在这里插入图片描述"></p>
+<h4><a id="2_Linux_55"></a>2. 设置Linux</h4>
+<p>同样时执行命令：cd /etc/sysconfig/network-scripts,来到该目录下，编辑ifcfg-ens33文件，然后保存修改<br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/e15c0134c062919d2949675f8edd329a.png" alt="在这里插入图片描述"><br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/1a8878284150936bf42af7eed6eee50f.png" alt="在这里插入图片描述"></p>
+<h4><a id="3__59"></a>3. 重启网卡服务</h4>
+<p>执行systemctl  restart network 重启网卡服务，分别ping 宿主机IP地址192.168.1.7和ping百度网址，如下表示桥接设置成功<br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/281cf3a201773f632a38346a5800c35a.png" alt="在这里插入图片描述"><br>
+到此桥接设置成功！！！</p>
+<h3><a id="only_host_66"></a>三、only host模式</h3>
+<p>这种模式基本上很少使用，所以大家可以了解一下</p>
+<h4><a id="1__68"></a>1. 设置宿主机</h4>
+<p>在宿主机上安装完VMware软件后，右击任务栏的网络图标 &gt;  打开网络和Internet设置 &gt; 单击网络和共享中心 &gt; 单击更改适配器设置，only host模式是设置VMnet1如下图所示：<br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/87698002a9cbc70ff113b7fd4d852251.png" alt="在这里插入图片描述"></p>
+<h4><a id="2__71"></a>2. 设置虚拟机</h4>
+<p>单击虚拟机编辑选择虚拟网络编辑器，设置如下，随后点击确定保存<br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/80e604e6f1ecbbdf1bac46d41a9d4a0f.png" alt="在这里插入图片描述"></p>
+<h4><a id="3_Linux_74"></a>3. 修改虚拟机Linux的网络配置文件</h4>
+<p>登录虚拟机Linux，执行cd /etc/sysconfig/network-scripts/来到该目录下，执行vim ifcfg-ens33编辑网络配置文件<br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/38b21ec6785a2b285f7a1ab872f4a609.png" alt="在这里插入图片描述"><br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/462ca71dcde86b5f66af71a252e559d4.png" alt="在这里插入图片描述"></p>
+<h4><a id="4__78"></a>4. 重启网卡服务</h4>
+<p>执行systemctl restart network重启虚拟机Linux网卡服务，可以看到ping宿主机没有问题，但是外网无法ping通<br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/6d60e77e2e3698e97d575e2b81ccf994.png" alt="在这里插入图片描述"><br>
+到此only host模式设置完成。</p>
+
+    </div>
+  </div>
+</body>
+
+</html>
