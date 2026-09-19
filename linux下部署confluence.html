@@ -1,0 +1,204 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="referrer" content="no-referrer">
+  <title>linux下部署confluence</title>
+  <link rel="stylesheet" href="https://stackedit.io/style.css" />
+</head>
+
+<body class="stackedit">
+  <div class="stackedit__left">
+    <div class="stackedit__toc">
+      
+<ul>
+<li>
+<ul>
+<li></li>
+</ul>
+</li>
+</ul>
+
+    </div>
+  </div>
+  <div class="stackedit__right">
+    <div class="stackedit__html">
+      <h3><a id="1__0"></a>1. 环境准备</h3>
+<p>（1）安装jdk1.8<br>
+参考：<a href="https://blog.csdn.net/u010080562/article/details/128164073">https://blog.csdn.net/u010080562/article/details/128164073</a><br>
+（2）安装mysql数据库<br>
+参考：<a href="https://blog.csdn.net/u010080562/article/details/128051396">https://blog.csdn.net/u010080562/article/details/128051396</a></p>
+<h3><a id="2_confluence_6"></a>2. 下载confluence</h3>
+<p>这里下载的是atlassian-confluence-7.19.7.tar.gz<br>
+官网下载链接：<a href="https://www.atlassian.com/zh/software/confluence/download-archives">https://www.atlassian.com/zh/software/confluence/download-archives</a><br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/28257b980541ebb86223d5b2a09ee8b0.png" alt="在这里插入图片描述"></p>
+<h3><a id="2_confluence_12"></a>2. 部署confluence</h3>
+<p>（1）创建安装目录</p>
+<pre><code class="prism language-linux">mkdir -p /data/wiki/confluence
+</code></pre>
+<p>（2）上传安装包并解压<br>
+将下载的atlassian-confluence-7.19.7.tar.gz安装包上传到/data/wiki/confluence目录下并解压</p>
+<pre><code class="prism language-linux">cd  /data/wiki/confluence
+tar -zxvf atlassian-confluence-7.19.7.tar.gz
+ll /data/wiki/confluence
+</code></pre>
+<p>（3）配置数据目录</p>
+<pre><code class="prism language-linux">编辑confluence-init.properties文件
+ vi atlassian-confluence-7.19.7/confluence/WEB-INF/classes/confluence-init.properties
+ 在文件末尾添加如下内容
+confluence.home=/data/wiki/confluence
+</code></pre>
+<p>（4）启动confluence</p>
+<pre><code class="prism language-linux">cd /data/wiki/confluence/atlassian-confluence-7.19.7/bin
+./start-confluence.sh
+</code></pre>
+<p>（5）安装数据库驱动</p>
+<pre><code class="prism language-Linux">我这里mysql是8.0.17版本，驱动使用的是8.0.29
+将mysql-connector-java-8.0.29.jar驱动上传到/data/wiki/confluence/atlassian-confluence-7.19.7/confluence/WEB-INF/lib目录下
+</code></pre>
+<p><em>注意：这里使用驱动版本不同（使用8.0.17版本驱动有问题），可能会导致创建数据库相关表失败，从而导致后续操作无法进行下去</em><br>
+（6）修改mysql配置文件my.cnf<br>
+在[mysqld]下添加如下内容</p>
+<pre><code class="prism language-linux">#confluence
+character-set-server=utf8mb4
+collation-server=utf8mb4_bin
+default-storage-engine=INNODB
+max_allowed_packet=256M
+innodb_log_file_size=2GB
+transaction-isolation=READ-COMMITTED
+binlog_format=row
+</code></pre>
+<p>然后重启数据库，查看如下表示上述的数据库参数设置成功</p>
+<pre><code class="prism language-linux">mysql&gt;
+mysql&gt; show variables like '%character_set_server%';
++----------------------+---------+
+| Variable_name        | Value   |
++----------------------+---------+
+| character_set_server | utf8mb4 |
++----------------------+---------+
+1 row in set (0.00 sec)
+
+mysql&gt; show variables like '%collation_server%';
++------------------+-------------+
+| Variable_name    | Value       |
++------------------+-------------+
+| collation_server | utf8mb4_bin |
++------------------+-------------+
+1 row in set (0.01 sec)
+
+mysql&gt; show variables like '%default_storage_engine%';
++------------------------+--------+
+| Variable_name          | Value  |
++------------------------+--------+
+| default_storage_engine | InnoDB |
++------------------------+--------+
+1 row in set (0.00 sec)
+
+mysql&gt; show variables like '%max_allowed_packet%';
++---------------------------+------------+
+| Variable_name             | Value      |
++---------------------------+------------+
+| max_allowed_packet        | 268435456  |
+| mysqlx_max_allowed_packet | 67108864   |
+| slave_max_allowed_packet  | 1073741824 |
++---------------------------+------------+
+3 rows in set (0.01 sec)
+
+mysql&gt; show variables like '%innodb_log_file_size%';
++----------------------+------------+
+| Variable_name        | Value      |
++----------------------+------------+
+| innodb_log_file_size | 2147483648 |
++----------------------+------------+
+1 row in set (0.00 sec)
+
+mysql&gt; show variables like '%transaction_isolation%';
++-----------------------+----------------+
+| Variable_name         | Value          |
++-----------------------+----------------+
+| transaction_isolation | READ-COMMITTED |
++-----------------------+----------------+
+1 row in set (0.00 sec)
+
+mysql&gt; show variables like '%binlog_format%';
++---------------+-------+
+| Variable_name | Value |
++---------------+-------+
+| binlog_format | ROW   |
++---------------+-------+
+1 row in set (0.00 sec)
+
+mysql&gt;
+</code></pre>
+<p>（7）创建confluence数据库、创建对应账户并授权</p>
+<pre><code class="prism language-linux">create database confluence character set utf8mb4 collate utf8mb4_bin;
+create user 'confluenceuser'@'%' identified by 'Pass@word1';
+grant all privileges on *.* to 'confluenceuser'@'%' with grant option;
+flush privileges;
+</code></pre>
+<p>（8）配置confluence的web页面<br>
+confluence访问地址：http://192.168.225.34:8090</p>
+<p>刚开始看到的是英文界面，可以点击language切换成中文<br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/5a1faf85798495dd33ee8b108eb0212d.png" alt="在这里插入图片描述"><br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/b6d705c0ad619434d1272e67e129374f.png" alt="在这里插入图片描述"><br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/969f0e9147fccbf55f3530f3cb88b586.png" alt="在这里插入图片描述"><br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/e312335f93278ca1105da22927f44243.png" alt="在这里插入图片描述"></p>
+<pre><code class="prism language-java"><span class="token operator">--</span>下载破解jar包
+cd <span class="token operator">/</span>data<span class="token operator">/</span>wiki<span class="token operator">/</span>confluence
+yum install <span class="token operator">-</span>y wget
+wget https<span class="token operator">:</span><span class="token operator">/</span><span class="token operator">/</span>github<span class="token punctuation">.</span>com<span class="token operator">/</span>haxqer<span class="token operator">/</span>confluence<span class="token operator">/</span>releases<span class="token operator">/</span>download<span class="token operator">/</span>v1<span class="token punctuation">.</span><span class="token number">3.3</span><span class="token operator">/</span>atlassian<span class="token operator">-</span>agent<span class="token punctuation">.</span>jar
+
+<span class="token operator">--</span>设置<span class="token constant">JAVA_OPTS</span>环境变量
+echo 'export <span class="token constant">JAVA_OPTS</span><span class="token operator">=</span><span class="token string">"-javaagent:/data/wiki/confluence/atlassian-agent.jar ${JAVA_OPTS}"</span>' <span class="token operator">&gt;&gt;</span> <span class="token operator">/</span>etc<span class="token operator">/</span>profile
+source <span class="token operator">/</span>etc<span class="token operator">/</span>profile
+
+<span class="token operator">--</span>启动<span class="token class-name">Confluence</span><span class="token punctuation">,</span>检查是否有agent参数
+cd <span class="token operator">/</span>data<span class="token operator">/</span>wiki<span class="token operator">/</span>confluence<span class="token operator">/</span>atlassian<span class="token operator">-</span>confluence<span class="token operator">-</span><span class="token number">7.19</span><span class="token number">.7</span><span class="token operator">/</span>bin
+<span class="token punctuation">.</span>/stop<span class="token operator">-</span>confluence<span class="token punctuation">.</span>sh
+<span class="token punctuation">.</span>/start<span class="token operator">-</span>confluence<span class="token punctuation">.</span>sh
+ps aux<span class="token operator">|</span>grep java
+
+<span class="token operator">--</span>执行如下命令获取授权码
+<span class="token operator">/</span>data<span class="token operator">/</span>wiki<span class="token operator">/</span>confluence
+java <span class="token operator">-</span>jar atlassian<span class="token operator">-</span>agent<span class="token punctuation">.</span>jar <span class="token operator">-</span>p conf <span class="token operator">-</span>m zzz<span class="token annotation punctuation">@bbb.com</span> <span class="token operator">-</span>n zhile <span class="token operator">-</span>o https<span class="token operator">:</span><span class="token operator">/</span><span class="token operator">/</span>zhile<span class="token punctuation">.</span>io <span class="token operator">-</span>s 服务器<span class="token constant">ID</span>
+
+<span class="token operator">--</span>将获取的授权码输入<span class="token punctuation">,</span>然后下一步
+</code></pre>
+<p><img src="https://i-blog.csdnimg.cn/blog_migrate/274c45e38d4fb0bb3350c47840d96355.png" alt="在这里插入图片描述"><br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/0c2a8740b6a5b604cdd4a52c474bf8fd.png" alt="在这里插入图片描述"></p>
+<p>选择我自己的数据库,输入数据库相关信息<br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/fffefbb87a9ebfe57b7c6eddca78e924.png" alt="在这里插入图片描述"><br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/4d9807492d85ac0e39d6386ec4f389f3.png" alt="在这里插入图片描述"><br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/92b7008bb15c2fb0afcb911de0a81ddd.png" alt="在这里插入图片描述"></p>
+<p>点击示范站点<br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/86c03ef575e5cc448cebf71e891135c8.png" alt="在这里插入图片描述"></p>
+<p>配置系统管理员账户<br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/a1a02b77112554b959f64727799035f0.png" alt="在这里插入图片描述"><br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/c4b6f689e65e9ccd047566e17be551cc.png" alt="在这里插入图片描述"><br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/0c2063ba7759eac95389961076efd7ce.png" alt="在这里插入图片描述"></p>
+<p>创建空间（可以为每个团队创建一个空间）<br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/a7e622e869321157df2708afeadca9f3.png" alt="在这里插入图片描述"><br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/a179f183de1453538e7e432f65c525f5.png" alt="在这里插入图片描述"></p>
+<p>设置普通用户首次可以注册<br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/3cfe54fdac9c835287445aee47b481bc.png" alt="在这里插入图片描述"><br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/7fe2672d4e09b8209a4a2e7877ded5df.png" alt="在这里插入图片描述"><br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/c212f920b8928c26f3bde4fc4949c6ef.png" alt="在这里插入图片描述"><br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/f661b79f2df42367ad91aa45fb004fb5.png" alt="在这里插入图片描述"><br>
+我们来注销账户看下登录界面，普通用户是否可以自由注册<br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/f021ec8c5aa7deadccacf26687318178.png" alt="在这里插入图片描述"><br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/0d57558fa6e3dcac020158b16cc297bd.png" alt="在这里插入图片描述"><br>
+可以看到新用户已经创建成功<br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/7cadd059fc4379efcd9329109d7dcd26.png" alt="在这里插入图片描述"></p>
+<h3><a id="3_confluence_198"></a>3. 使用confluence</h3>
+<p>使用非常简单，登录之后，点击创建按钮<br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/53cea48e9d4b1c8a5144f12fbffd7ba4.png" alt="在这里插入图片描述"><br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/c6eef46b861bf1edc51e245dedfefb90.png" alt="在这里插入图片描述"><br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/f3154c7d627cf9c8c1af2a156be2049e.png" alt="在这里插入图片描述"></p>
+
+    </div>
+  </div>
+</body>
+
+</html>

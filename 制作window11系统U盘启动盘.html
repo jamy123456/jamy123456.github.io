@@ -1,0 +1,71 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="referrer" content="no-referrer">
+  <title>制作window11系统U盘启动盘</title>
+  <link rel="stylesheet" href="https://stackedit.io/style.css" />
+</head>
+
+<body class="stackedit">
+  <div class="stackedit__left">
+    <div class="stackedit__toc">
+      
+<ul>
+<li>
+<ul>
+<li></li>
+</ul>
+</li>
+</ul>
+
+    </div>
+  </div>
+  <div class="stackedit__right">
+    <div class="stackedit__html">
+      <p></p><div class="toc"><h3>目录</h3><ul><ul><ul><li><a href="#_1">前言</a></li><li><a href="#1__U_5">1.  U盘分区</a></li><li><a href="#2_U_18">2. 复制系统文件到U盘</a></li><li><a href="#3_bcd_24">3. 编辑bcd文件</a></li><li><a href="#4_U_43">4. 查看系统安装盘（U盘）</a></li></ul></ul></ul></div><p></p>
+<h3><a id="_1"></a>前言</h3>
+<p>制作系统安装U盘需要使用到bootice这个工具(<a href="https://download.csdn.net/download/u010080562/28520106">下载地址</a>)，它主要是用来给U盘分区以及编辑bcd引导文件的。<br>
+这里说明一下为什么给U盘分区，主要是因为uefi启动现在目前只支持Fat文件格式，但是它有一个缺点就是支持的单个文件大小最大到4GB,也就说系统文件单个有大于4GB的就放不了，所以这里我分了两个分区，一个是引导分区，给300MB足以，文件格式为Fat32，剩下的空间为普通分区，文件格式为exfat或是NTFS都可以，这两个文件系统格式支持最大为TB级，所以可以支持大于4GB的单个文件（主要是这个install.wim文件大于4GB），我这里就把镜像文件里面的sources文件夹全部放在普通分区，然后把引导分区里面的bcd文件指向sources文件夹所在的分区就可以了</p>
+<h3><a id="1__U_5"></a>1.  U盘分区</h3>
+<p>打开bootice工具，选中我们要制作系统U盘启动盘，点击分区管理进入分区管理界面<br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/84abdaa3ceed18170152ab9092019910.png" alt="在这里插入图片描述"></p>
+<p>点击重新分区<br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/f9e5301b2aba5a3bb8f05ed63e224fd3.png" alt="在这里插入图片描述"><br>
+选择USB-HDD模式（多分区），点击确定<br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/a3653090a20f20052b14e71d6feef8d8.png" alt="在这里插入图片描述"><br>
+设置分区参数如下，点击确定执行分区<br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/e5fd7e0936071f720250361eacd711d5.png" alt="在这里插入图片描述"></p>
+<p>分区完成显示如下:<br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/8b604a5e06a18411b3037eb2400f4ab0.png" alt="在这里插入图片描述"></p>
+<h3><a id="2_U_18"></a>2. 复制系统文件到U盘</h3>
+<p>把window11的iso镜像的文件（除了sources文件夹）全部复制到刚才完成分区的引导分区（FAT32的那个分区）<br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/f64d66d740e2cff87ac5d4f18074f425.png" alt="在这里插入图片描述"><br>
+把window11的iso镜像sources文件夹复制到刚才完成分区的普通分区（ExFAT的那个分区）<br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/f5ff538bc71ff8c4e2e6c8ab0a9f67f4.png" alt="在这里插入图片描述"></p>
+<h3><a id="3_bcd_24"></a>3. 编辑bcd文件</h3>
+<p>bootice切换到BCD编辑，选择其他BCD文件<br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/f3cd9e871e3a212e6692cf8da106929c.png" alt="在这里插入图片描述"></p>
+<p>选中U盘引导分区根目录下boot文件夹下的bcd文件<br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/dd684a001b10cba26ba38855f8f7fe87.png" alt="在这里插入图片描述"><br>
+点击智能编辑模式，进入bcd文件编辑界面<br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/65339f2c09985b57d211c7c8db4ca27c.png" alt="在这里插入图片描述"><br>
+启动磁盘就选我们制作系统安装盘的U盘，启动分区就选sources文件夹所在的分区，然后点击保存当前系统设置，点击关闭退出<br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/e203fcadbe53b48c733fe77fe21b3e17.png" alt="在这里插入图片描述"></p>
+<p>再选中U盘引导分区根目录下efi/microsoft/boot文件夹里面的bcd文件<img src="https://i-blog.csdnimg.cn/blog_migrate/a5798227edc8d2c5427108ec00564044.png" alt="boot文件夹下的bcd文件"><br>
+再次点击智能编辑模式，进入bcd文件编辑界面<br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/2ea8b8750e179416a343cdec5ce0c415.png" alt="在这里插入图片描述"><br>
+启动磁盘就选我们制作系统安装盘的U盘，启动分区就选sources文件夹所在的分区，然后点击保存当前系统设置，点击关闭退出<br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/9e1b8c55b70c2b46e3a983077eb830ab.png" alt="在这里插入图片描述"><br>
+到此编辑BCD引导文件完成</p>
+<h3><a id="4_U_43"></a>4. 查看系统安装盘（U盘）</h3>
+<p>这里可以看到U盘分成了两个分区，并且引导分区已经显示系统安装盘的图标了，到此大功告成，可以去试试我们的系统安装盘了。<br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/9c8b64e1d9a04f16155f84ebd77e6906.png" alt="在这里插入图片描述"></p>
+
+    </div>
+  </div>
+</body>
+
+</html>

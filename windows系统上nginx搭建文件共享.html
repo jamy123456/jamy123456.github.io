@@ -1,0 +1,114 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="referrer" content="no-referrer">
+  <title>windows系统上nginx搭建文件共享</title>
+  <link rel="stylesheet" href="https://stackedit.io/style.css" />
+</head>
+
+<body class="stackedit">
+  <div class="stackedit__left">
+    <div class="stackedit__toc">
+      
+<ul>
+<li>
+<ul>
+<li></li>
+</ul>
+</li>
+</ul>
+
+    </div>
+  </div>
+  <div class="stackedit__right">
+    <div class="stackedit__html">
+      <h3><a id="1windowsnginx_0"></a>1、下载windows版nginx</h3>
+<p><a href="https://nginx.org/en/download.html">下载地址</a><br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/246783055fc2444d5a828b14b2385630.png" alt="在这里插入图片描述"></p>
+<h3><a id="2nginx_3"></a>2、配置nginx</h3>
+<p>编辑nginx.conf配置文件</p>
+<pre><code>在http模块下添加这个参数
+underscores_in_headers on;
+
+#修改location内容，共享哪个文件夹，就写哪个文件夹，最后一定要跟上/，否则无法访问
+location / {
+            alias   "I:/Linux_iso/";
+            autoindex on;
+            autoindex_exact_size off;
+            autoindex_localtime on;
+ }
+
+或者是
+location / {
+            root   I:/Linux_iso/;
+            autoindex on;
+            autoindex_exact_size off;
+            autoindex_localtime on;
+ }
+
+</code></pre>
+<p><img src="https://i-blog.csdnimg.cn/blog_migrate/fa259f2dcafae1b1933adc23241b5ae5.png" alt="在这里插入图片描述"></p>
+<h3><a id="3nginx_28"></a>3、启动和停止nginx</h3>
+<pre><code>启动
+nginx.exe  -p  安装目录 -c  conf/nginx.conf
+然后查询nginx启动的进程，如下图所示，表示启动成功
+tasklist | findstr nginx
+
+关停nginx
+先查询nginx服务的进程号
+tasklist | findstr nginx
+再直接停止
+taskkill -F /PID 进程号
+</code></pre>
+<p><img src="https://i-blog.csdnimg.cn/blog_migrate/51cd741b0a09e6b423eedd89f3aedebf.png" alt="在这里插入图片描述"></p>
+<h3><a id="4_43"></a>4、解决中文目录不能访问的问题</h3>
+<p>官方的nginx（1.24版本以下无法解决）在window下不支持中文目录和中文文件名，访问不了，从1.24版本开始是可以支持的是完全支持中文目录和中文文件名，如下图如所示：<br>
+配置文件修改如下：</p>
+<pre><code> location / {
+ 		    #这里指向的是我的个人移动硬盘
+            root   I:/;
+			autoindex on;
+			#autoindex_format html;
+            autoindex_exact_size off;
+            autoindex_localtime on;
+			charset utf-8;
+        }
+</code></pre>
+<p>访问整体目录（一个5T容量的移动硬盘）<br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/5e81fb6ae8e9c5b803120507a2f90451.png" alt="在这里插入图片描述"><br>
+访问中文目录和中文文件名<br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/cdf86d2a7f7f4001f509c1dbc3914492.png" alt="在这里插入图片描述"><br>
+访问PDF<br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/43bf1795d9d705fbeb67f188d8b35f2e.png" alt="在这里插入图片描述"><br>
+访问电影，是直接播放的</p>
+<p><img src="https://i-blog.csdnimg.cn/blog_migrate/c4dc7a56e570d39b1befb766a10a19a2.png" alt="在这里插入图片描述"></p>
+<h3><a id="5_67"></a>5、设置用户密码登录</h3>
+<pre><code>（1）在linux安装密码文件生成工具
+yum -y install  httpd-tools
+
+（2）生成用户密码文件（用户名:admin   密码:123456）
+htpasswd -bc  passwd admin 123456
+
+（3）将用户密码文件放到windows下的nginx的conf目录下
+
+（4）在nginx配置文件添加启用账户密码登录配置
+在nginx.conf的server块下添加如下两行
+//认证提示符信息
+auth_basic "please input username and passwd!";      
+//认证的密码文件
+auth_basic_user_file  passwd;
+
+然后重启nginx即可        
+</code></pre>
+<p><img src="https://i-blog.csdnimg.cn/blog_migrate/61420e4bc0bfef408df76735a83f3961.png" alt="在这里插入图片描述"><br>
+访问显示登录界面，输入刚才配置的用户密码即可正常访问<br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/0e852d5bbaf9a4f956152c69efaeb37b.png" alt="在这里插入图片描述"></p>
+
+    </div>
+  </div>
+</body>
+
+</html>

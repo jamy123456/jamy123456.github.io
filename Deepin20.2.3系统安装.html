@@ -1,0 +1,95 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="referrer" content="no-referrer">
+  <title>Deepin20.2.3系统安装</title>
+  <link rel="stylesheet" href="https://stackedit.io/style.css" />
+</head>
+
+<body class="stackedit">
+  <div class="stackedit__left">
+    <div class="stackedit__toc">
+      
+<ul>
+<li>
+<ul>
+<li></li>
+</ul>
+</li>
+</ul>
+
+    </div>
+  </div>
+  <div class="stackedit__right">
+    <div class="stackedit__html">
+      <p></p><div class="toc"><h3>目录</h3><ul><ul><ul><li><a href="#1__1">1. 启动镜像</a></li><li><a href="#2__4">2. 选择语言</a></li><li><a href="#3__7">3. 硬盘分区</a></li><li><a href="#4_boot_10">4. 新建boot分区</a></li><li><a href="#5__14">5. 创建虚拟分区</a></li><li><a href="#6__20">6. 创建根分区</a></li><li><a href="#7__26">7. 执行分区方案</a></li><li><a href="#8__30">8. 安装系统</a></li><li><a href="#9__34">9. 系统设置</a></li><li><a href="#10__48">10. 重启进入系统</a></li><li><a href="#11_ssh_54">11. ssh连接</a></li></ul></ul></ul></div><p></p>
+<h3><a id="1__1"></a>1. 启动镜像</h3>
+<p>启动镜像进入Boot menu，默认选择第一行，回车即可<br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/3694010d69f322e6414a47af0b48276e.png#pic_center" alt="在这里插入图片描述"></p>
+<h3><a id="2__4"></a>2. 选择语言</h3>
+<p>这里选择简体中文，毕竟是国产系统，顺便也支持下咱们的母语，然后点击下一步<br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/61e43534ac9d229f1fa4450194aa008e.png#pic_center" alt="在这里插入图片描述"></p>
+<h3><a id="3__7"></a>3. 硬盘分区</h3>
+<p>这里开始是整个安装过程的核心部分，点击图中白色圆盘，进入分区弹框<br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/ad8ef20b5d142da70e25c772f717f0b1.png#pic_center" alt="在这里插入图片描述"></p>
+<h3><a id="4_boot_10"></a>4. 新建boot分区</h3>
+<p>按照图中选择，大小选择最小即可，你也可以选大一点，一般情况下1G大小足够了，然后点击新建<br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/4857672a35f48bffa495b372caf72a58.png#pic_center" alt="在这里插入图片描述"></p>
+<h3><a id="5__14"></a>5. 创建虚拟分区</h3>
+<p>（1）我们这里所说的虚拟分区就是swap分区，它的主要作用在于，当你系统的内存用完之后，swap可以临时充当一下内存来使用，但是运行速度却不尽人意，充其量是有比没有强，点击白色小圆盘新建swap分区<br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/4d13ef0074eed64cdf53ec082193441a.png#pic_center" alt="在这里插入图片描述"><br>
+（2）按照图中选择参数设置，大小设置2G左右就可以了，然后点击新建</p>
+<p><img src="https://i-blog.csdnimg.cn/blog_migrate/905ab46835d1fdaa59c68304ed188955.png#pic_center" alt="在这里插入图片描述"></p>
+<h3><a id="6__20"></a>6. 创建根分区</h3>
+<p>（1）创建根分区就是我们常说的 / 分区，这个分区多我们来说是最重要的，它是系统的核心部分，继续点击图中白色小圆盘，开始新建<br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/82c3a95efc2863d8e3f2d913e8914115.png#pic_center" alt="在这里插入图片描述"><br>
+（2）按照图中参数设置即可，一般剩下的全部分区空间都分配给这个分区，然后点击新建</p>
+<p><img src="https://i-blog.csdnimg.cn/blog_migrate/88aaf06bbb3ef44cba59245774080e24.png#pic_center" alt="在这里插入图片描述"></p>
+<h3><a id="7__26"></a>7. 执行分区方案</h3>
+<p>这里点击下一步就是执行之前的分区方案，并且安装系统，我们发现Deepin系统安装比Debian、Ubuntu安装要简捷很多（个人意见），其实Deepin系统还是很不错的，现在也是配了许多常用软件，软件生态逐渐完善，即使不能完全替代windows,但也是一种选择<br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/296ebe6f65bd8aa28fbfcca158f8d69b.png#pic_center" alt="在这里插入图片描述"><br>
+点击继续安装进行系统安装<img src="https://i-blog.csdnimg.cn/blog_migrate/106ab12d266e1c3d6744eecae10b4911.png#pic_center" alt="在这里插入图片描述"></p>
+<h3><a id="8__30"></a>8. 安装系统</h3>
+<p>到这里就说明正在进行系统安装了，需要花费一些时间，耐心等待一会儿<br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/c03e40d2b2246a58e7b24087557f1f11.png#pic_center" alt="在这里插入图片描述"></p>
+<h3><a id="9__34"></a>9. 系统设置</h3>
+<p>（1）安装完系统，点击立即重启系统<br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/67e2642ec7dacfaf47e0caa0f3ac6e25.png#pic_center" alt="在这里插入图片描述"><br>
+（2）进入系统设置界面，选择语言，这里依然是简体中文，然后点击下一步<br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/11f739c072f02cf6ecc3adb3f7caca1d.png#pic_center" alt="在这里插入图片描述"><br>
+（3）设置键盘布局，选择汉语，然后点击下一步</p>
+<p><img src="https://i-blog.csdnimg.cn/blog_migrate/523d0f73ff740676b332d2bfb94fd0b9.png#pic_center" alt="在这里插入图片描述"><br>
+（4）选择时区。默认为上海即可，然后点击下一步<br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/aac57710fd72ff514568e2361e49ea19.png#pic_center" alt="在这里插入图片描述"><br>
+（5）创建用户，这里创建的用户在登陆时会用到（因为登陆时只能用此时创建的用户登录）<br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/6ec114d17fe6ab0da3eb0b6c5f5edf73.png#pic_center" alt="在这里插入图片描述"><br>
+（6）优化系统配置，之后自动重启进入登录界面<br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/e411b75a993e2d98bf374d23f181a62a.png#pic_center" alt="在这里插入图片描述"></p>
+<h3><a id="10__48"></a>10. 重启进入系统</h3>
+<p><img src="https://i-blog.csdnimg.cn/blog_migrate/7e2d487bcf5fbbf8abb94e60e6df119b.png#pic_center" alt="在这里插入图片描述"><br>
+在这里不知道大家有没有发现Deepin只允许安装系统时创建的用户登录，除此之外没有任何入口可以直接登录root账户，这一点和其他发行版有所不同，根据Deepin官网的说明，暂时不允许root账户直接登录，但是可以ssh客户端直接登录root账户，输入密码登录系统<br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/07671054d7bf2f4fe5126b5767ef8953.png#pic_center" alt="在这里插入图片描述"><br>
+进入系统桌面，这里我尝试性的安装了wps和idea,个人感觉不是太慢，还可以，大家可以尝试拿不用的旧电脑装着玩玩<br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/522c4a159519853662dc179b7b7d07d6.png#pic_center" alt="在这里插入图片描述"></p>
+<h3><a id="11_ssh_54"></a>11. ssh连接</h3>
+<p>（1）右击桌面打开终端，先执行passwd root 设置root账户密码，然后执行su root，输入密码后即可进入root账户<br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/eaf1b240e5f01fb109736e7e9b5091a5.png#pic_center" alt="在这里插入图片描述"><br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/dba6dfb215e6644aee29df4c0c196564.png#pic_center" alt="在这里插入图片描述"></p>
+<p>（2）执行vim /etc/lightdm/lightdm.conf编辑lightdm.conf文件，加上下面两行内容，然后执行ESC退出编辑模式，输入:wq保存修改的内容</p>
+<pre><code>greeter-hide-user=true
+greeter-show-manual-login=true
+</code></pre>
+<p><img src="https://i-blog.csdnimg.cn/blog_migrate/b6fd06fa3d1701ec7257e1e8b3c3c14f.png#pic_center" alt="在这里插入图片描述"><br>
+（3）安装sshd服务，vim /etc/ssh/sshd_config编辑sshd_config文件，添加如下两行内容，然后按ESC键退出编辑模式，最后输入:wq保存修改内容<br>
+<img src="https://i-blog.csdnimg.cn/blog_migrate/7fcad569d28ccdf09c15695515c9ec7d.png#pic_center" alt="在这里插入图片描述"><br>
+（4）重启系统，选择SSH客户端连接，我这里选择Xshell连接</p>
+<p><img src="https://i-blog.csdnimg.cn/blog_migrate/86564c0d3781726fac92e5397de25336.png#pic_center" alt="在这里插入图片描述"></p>
+
+    </div>
+  </div>
+</body>
+
+</html>
